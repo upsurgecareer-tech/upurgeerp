@@ -1,385 +1,163 @@
-'use strict';
+const sequelize = require('../config/database');
 
-module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    // Students
-    await queryInterface.createTable('students', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      branch_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'branches', key: 'id' }
-      },
-      lead_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'leads', key: 'id' }
-      },
-      admission_no: {
-        type: Sequelize.STRING(50),
-        unique: true
-      },
-      name: {
-        type: Sequelize.STRING(100),
-        allowNull: false
-      },
-      dob: {
-        type: Sequelize.DATEONLY
-      },
-      mobile: {
-        type: Sequelize.STRING(15),
-        allowNull: false
-      },
-      email: {
-        type: Sequelize.STRING(100)
-      },
-      address: {
-        type: Sequelize.TEXT
-      },
-      parent_name: {
-        type: Sequelize.STRING(100)
-      },
-      parent_mobile: {
-        type: Sequelize.STRING(15)
-      },
-      photo_url: {
-        type: Sequelize.STRING(255)
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+async function up() {
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS students (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      branch_id INT NOT NULL,
+      lead_id INT,
+      admission_no VARCHAR(50) UNIQUE,
+      name VARCHAR(100) NOT NULL,
+      dob DATE,
+      mobile VARCHAR(15) NOT NULL,
+      email VARCHAR(100),
+      address TEXT,
+      parent_name VARCHAR(100),
+      parent_mobile VARCHAR(15),
+      photo_url VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (branch_id) REFERENCES branches(id),
+      FOREIGN KEY (lead_id) REFERENCES leads(id),
+      INDEX idx_mobile (mobile),
+      INDEX idx_branch (branch_id)
+    );
+  `);
 
-    await queryInterface.addIndex('students', ['mobile']);
-    await queryInterface.addIndex('students', ['branch_id']);
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS course_packages (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      branch_id INT NOT NULL,
+      name VARCHAR(200) NOT NULL,
+      total_fee DECIMAL(10, 2) NOT NULL,
+      duration_months INT,
+      description TEXT,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (branch_id) REFERENCES branches(id)
+    );
+  `);
 
-    // Course Packages
-    await queryInterface.createTable('course_packages', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      branch_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'branches', key: 'id' }
-      },
-      name: {
-        type: Sequelize.STRING(200),
-        allowNull: false
-      },
-      total_fee: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      duration_months: {
-        type: Sequelize.INTEGER
-      },
-      description: {
-        type: Sequelize.TEXT
-      },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS batches (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      branch_id INT NOT NULL,
+      name VARCHAR(100) NOT NULL,
+      start_date DATE,
+      end_date DATE,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (branch_id) REFERENCES branches(id)
+    );
+  `);
 
-    // Batches
-    await queryInterface.createTable('batches', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      branch_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'branches', key: 'id' }
-      },
-      name: {
-        type: Sequelize.STRING(100),
-        allowNull: false
-      },
-      start_date: {
-        type: Sequelize.DATEONLY
-      },
-      end_date: {
-        type: Sequelize.DATEONLY
-      },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS admissions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      student_id INT NOT NULL,
+      course_package_id INT NOT NULL,
+      batch_id INT,
+      counsellor_id INT,
+      admission_date DATE NOT NULL,
+      total_fee DECIMAL(10, 2) NOT NULL,
+      discount_amount DECIMAL(10, 2) DEFAULT 0,
+      net_payable DECIMAL(10, 2) NOT NULL,
+      status ENUM('Active', 'Inactive', 'Cancelled') DEFAULT 'Active',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (student_id) REFERENCES students(id),
+      FOREIGN KEY (course_package_id) REFERENCES course_packages(id),
+      FOREIGN KEY (batch_id) REFERENCES batches(id),
+      FOREIGN KEY (counsellor_id) REFERENCES users(id),
+      INDEX idx_student (student_id),
+      INDEX idx_course (course_package_id)
+    );
+  `);
 
-    // Admissions
-    await queryInterface.createTable('admissions', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      student_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'students', key: 'id' }
-      },
-      course_package_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'course_packages', key: 'id' }
-      },
-      batch_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'batches', key: 'id' }
-      },
-      counsellor_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' }
-      },
-      admission_date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-      },
-      total_fee: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      discount_amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        defaultValue: 0
-      },
-      net_payable: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      status: {
-        type: Sequelize.ENUM('Active', 'Inactive', 'Cancelled'),
-        defaultValue: 'Active'
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS fee_schedules (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      admission_id INT NOT NULL,
+      installment_no INT NOT NULL,
+      due_date DATE NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      status ENUM('Pending', 'Paid', 'Overdue') DEFAULT 'Pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (admission_id) REFERENCES admissions(id) ON DELETE CASCADE,
+      INDEX idx_admission (admission_id),
+      INDEX idx_due_date (due_date),
+      INDEX idx_status (status)
+    );
+  `);
 
-    await queryInterface.addIndex('admissions', ['student_id']);
-    await queryInterface.addIndex('admissions', ['course_package_id']);
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS fee_payments (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      fee_schedule_id INT,
+      admission_id INT NOT NULL,
+      amount_paid DECIMAL(10, 2) NOT NULL,
+      payment_mode ENUM('Cash', 'Online', 'Cheque', 'Card') DEFAULT 'Cash',
+      payment_date DATE NOT NULL,
+      receipt_no VARCHAR(50) UNIQUE,
+      received_by INT,
+      gateway_txn_id VARCHAR(100),
+      remarks TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (fee_schedule_id) REFERENCES fee_schedules(id),
+      FOREIGN KEY (admission_id) REFERENCES admissions(id),
+      FOREIGN KEY (received_by) REFERENCES users(id),
+      INDEX idx_admission (admission_id),
+      INDEX idx_receipt (receipt_no)
+    );
+  `);
 
-    // Fee Schedules
-    await queryInterface.createTable('fee_schedules', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      admission_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'admissions', key: 'id' },
-        onDelete: 'CASCADE'
-      },
-      installment_no: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      due_date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-      },
-      amount: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      status: {
-        type: Sequelize.ENUM('Pending', 'Paid', 'Overdue'),
-        defaultValue: 'Pending'
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS discounts (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      admission_id INT NOT NULL,
+      discount_type ENUM('Amount', 'Percentage') NOT NULL,
+      discount_value DECIMAL(10, 2) NOT NULL,
+      reason TEXT,
+      approved_by INT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (admission_id) REFERENCES admissions(id) ON DELETE CASCADE,
+      FOREIGN KEY (approved_by) REFERENCES users(id)
+    );
+  `);
 
-    await queryInterface.addIndex('fee_schedules', ['admission_id']);
-    await queryInterface.addIndex('fee_schedules', ['due_date']);
-    await queryInterface.addIndex('fee_schedules', ['status']);
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS student_documents (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      student_id INT NOT NULL,
+      document_type VARCHAR(50) NOT NULL,
+      file_url VARCHAR(255) NOT NULL,
+      uploaded_by INT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+      FOREIGN KEY (uploaded_by) REFERENCES users(id),
+      INDEX idx_student (student_id)
+    );
+  `);
 
-    // Fee Payments
-    await queryInterface.createTable('fee_payments', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      fee_schedule_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'fee_schedules', key: 'id' }
-      },
-      admission_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'admissions', key: 'id' }
-      },
-      amount_paid: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      payment_mode: {
-        type: Sequelize.ENUM('Cash', 'Online', 'Cheque', 'Card'),
-        defaultValue: 'Cash'
-      },
-      payment_date: {
-        type: Sequelize.DATEONLY,
-        allowNull: false
-      },
-      receipt_no: {
-        type: Sequelize.STRING(50),
-        unique: true
-      },
-      received_by: {
-        type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' }
-      },
-      gateway_txn_id: {
-        type: Sequelize.STRING(100)
-      },
-      remarks: {
-        type: Sequelize.TEXT
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
+  console.log('✅ Admissions & Fee Management tables created successfully');
+}
 
-    await queryInterface.addIndex('fee_payments', ['admission_id']);
-    await queryInterface.addIndex('fee_payments', ['receipt_no']);
+async function down() {
+  await sequelize.query('DROP TABLE IF EXISTS student_documents');
+  await sequelize.query('DROP TABLE IF EXISTS discounts');
+  await sequelize.query('DROP TABLE IF EXISTS fee_payments');
+  await sequelize.query('DROP TABLE IF EXISTS fee_schedules');
+  await sequelize.query('DROP TABLE IF EXISTS admissions');
+  await sequelize.query('DROP TABLE IF EXISTS batches');
+  await sequelize.query('DROP TABLE IF EXISTS course_packages');
+  await sequelize.query('DROP TABLE IF EXISTS students');
+  console.log('✅ Admissions & Fee Management tables dropped successfully');
+}
 
-    // Discounts
-    await queryInterface.createTable('discounts', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      admission_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'admissions', key: 'id' },
-        onDelete: 'CASCADE'
-      },
-      discount_type: {
-        type: Sequelize.ENUM('Amount', 'Percentage'),
-        allowNull: false
-      },
-      discount_value: {
-        type: Sequelize.DECIMAL(10, 2),
-        allowNull: false
-      },
-      reason: {
-        type: Sequelize.TEXT
-      },
-      approved_by: {
-        type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' }
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
-
-    // Student Documents
-    await queryInterface.createTable('student_documents', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      student_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: { model: 'students', key: 'id' },
-        onDelete: 'CASCADE'
-      },
-      document_type: {
-        type: Sequelize.STRING(50),
-        allowNull: false
-      },
-      file_url: {
-        type: Sequelize.STRING(255),
-        allowNull: false
-      },
-      uploaded_by: {
-        type: Sequelize.INTEGER,
-        references: { model: 'users', key: 'id' }
-      },
-      created_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-      }
-    });
-
-    await queryInterface.addIndex('student_documents', ['student_id']);
-
-    console.log('✅ Admissions & Fee Management tables created successfully');
-  },
-
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('student_documents');
-    await queryInterface.dropTable('discounts');
-    await queryInterface.dropTable('fee_payments');
-    await queryInterface.dropTable('fee_schedules');
-    await queryInterface.dropTable('admissions');
-    await queryInterface.dropTable('batches');
-    await queryInterface.dropTable('course_packages');
-    await queryInterface.dropTable('students');
-    console.log('✅ Admissions & Fee Management tables dropped successfully');
-  }
-};
+module.exports = { up, down };

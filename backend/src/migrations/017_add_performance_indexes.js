@@ -1,83 +1,91 @@
+const safeAddIndex = async (queryInterface, table, fields) => {
+  try {
+    await queryInterface.addIndex(table, fields);
+    console.log(`✅ Index added on ${table} (${fields.join(', ')})`);
+  } catch (error) {
+    console.log(`⚠️ Skipped index on ${table} (${fields.join(', ')}): ${error.message}`);
+  }
+};
+
+const safeRemoveIndex = async (queryInterface, table, fields) => {
+  try {
+    await queryInterface.removeIndex(table, fields);
+  } catch (error) {
+    // ignore
+  }
+};
+
 module.exports = {
   up: async (queryInterface) => {
     // Students table indexes
-    await queryInterface.addIndex('students', ['organization_id', 'status']);
-    await queryInterface.addIndex('students', ['email']);
-    await queryInterface.addIndex('students', ['phone']);
-    await queryInterface.addIndex('students', ['batch_id']);
+    await safeAddIndex(queryInterface, 'students', ['email']);
+    await safeAddIndex(queryInterface, 'students', ['phone']);
+    await safeAddIndex(queryInterface, 'students', ['batch_id']);
     
     // Leads table indexes
-    await queryInterface.addIndex('leads', ['organization_id', 'status']);
-    await queryInterface.addIndex('leads', ['assigned_to']);
-    await queryInterface.addIndex('leads', ['source']);
-    await queryInterface.addIndex('leads', ['created_at']);
+    await safeAddIndex(queryInterface, 'leads', ['assigned_to']);
+    await safeAddIndex(queryInterface, 'leads', ['source']);
+    await safeAddIndex(queryInterface, 'leads', ['created_at']);
     
     // Fee payments indexes
-    await queryInterface.addIndex('fee_payments', ['student_id', 'status']);
-    await queryInterface.addIndex('fee_payments', ['due_date']);
-    await queryInterface.addIndex('fee_payments', ['payment_date']);
+    await safeAddIndex(queryInterface, 'fee_schedules', ['status']);
+    await safeAddIndex(queryInterface, 'fee_schedules', ['due_date']);
+    await safeAddIndex(queryInterface, 'fee_payments', ['payment_date']);
     
     // Attendance indexes
-    await queryInterface.addIndex('attendance', ['student_id', 'date']);
-    await queryInterface.addIndex('attendance', ['batch_id', 'date']);
-    await queryInterface.addIndex('attendance', ['status']);
+    await safeAddIndex(queryInterface, 'attendance', ['student_id', 'date']);
+    await safeAddIndex(queryInterface, 'attendance', ['batch_id', 'date']);
+    await safeAddIndex(queryInterface, 'attendance', ['status']);
     
     // Transactions indexes
-    await queryInterface.addIndex('transactions', ['organization_id', 'transaction_date']);
-    await queryInterface.addIndex('transactions', ['type']);
+    await safeAddIndex(queryInterface, 'transactions', ['organization_id', 'transaction_date']);
+    await safeAddIndex(queryInterface, 'transactions', ['type']);
     
     // Transaction entries indexes
-    await queryInterface.addIndex('transaction_entries', ['transaction_id']);
-    await queryInterface.addIndex('transaction_entries', ['account_head_id']);
+    await safeAddIndex(queryInterface, 'transaction_entries', ['transaction_id']);
+    await safeAddIndex(queryInterface, 'transaction_entries', ['account_head_id']);
     
     // Book issues indexes
-    await queryInterface.addIndex('book_issues', ['student_id', 'status']);
-    await queryInterface.addIndex('book_issues', ['book_id']);
-    await queryInterface.addIndex('book_issues', ['due_date']);
+    await safeAddIndex(queryInterface, 'book_issues', ['student_id', 'status']);
+    await safeAddIndex(queryInterface, 'book_issues', ['book_id']);
+    await safeAddIndex(queryInterface, 'book_issues', ['due_date']);
     
     // Staff indexes
-    await queryInterface.addIndex('staff', ['organization_id', 'status']);
-    await queryInterface.addIndex('staff', ['department_id']);
-    await queryInterface.addIndex('staff', ['email']);
+    await safeAddIndex(queryInterface, 'staff', ['department_id']);
+    await safeAddIndex(queryInterface, 'staff', ['email']);
     
     // Exams indexes
-    await queryInterface.addIndex('exams', ['batch_id', 'exam_date']);
-    await queryInterface.addIndex('exams', ['course_id']);
+    await safeAddIndex(queryInterface, 'exams', ['batch_id', 'exam_date']);
+    await safeAddIndex(queryInterface, 'exams', ['course_id']);
     
     // Batches indexes
-    await queryInterface.addIndex('batches', ['course_id', 'status']);
-    await queryInterface.addIndex('batches', ['start_date']);
+    await safeAddIndex(queryInterface, 'batches', ['start_date']);
   },
 
   down: async (queryInterface) => {
-    // Remove indexes in reverse order
-    await queryInterface.removeIndex('batches', ['course_id', 'status']);
-    await queryInterface.removeIndex('batches', ['start_date']);
-    await queryInterface.removeIndex('exams', ['batch_id', 'exam_date']);
-    await queryInterface.removeIndex('exams', ['course_id']);
-    await queryInterface.removeIndex('staff', ['organization_id', 'status']);
-    await queryInterface.removeIndex('staff', ['department_id']);
-    await queryInterface.removeIndex('staff', ['email']);
-    await queryInterface.removeIndex('book_issues', ['student_id', 'status']);
-    await queryInterface.removeIndex('book_issues', ['book_id']);
-    await queryInterface.removeIndex('book_issues', ['due_date']);
-    await queryInterface.removeIndex('transaction_entries', ['transaction_id']);
-    await queryInterface.removeIndex('transaction_entries', ['account_head_id']);
-    await queryInterface.removeIndex('transactions', ['organization_id', 'transaction_date']);
-    await queryInterface.removeIndex('transactions', ['type']);
-    await queryInterface.removeIndex('attendance', ['student_id', 'date']);
-    await queryInterface.removeIndex('attendance', ['batch_id', 'date']);
-    await queryInterface.removeIndex('attendance', ['status']);
-    await queryInterface.removeIndex('fee_payments', ['student_id', 'status']);
-    await queryInterface.removeIndex('fee_payments', ['due_date']);
-    await queryInterface.removeIndex('fee_payments', ['payment_date']);
-    await queryInterface.removeIndex('leads', ['organization_id', 'status']);
-    await queryInterface.removeIndex('leads', ['assigned_to']);
-    await queryInterface.removeIndex('leads', ['source']);
-    await queryInterface.removeIndex('leads', ['created_at']);
-    await queryInterface.removeIndex('students', ['organization_id', 'status']);
-    await queryInterface.removeIndex('students', ['email']);
-    await queryInterface.removeIndex('students', ['phone']);
-    await queryInterface.removeIndex('students', ['batch_id']);
+    await safeRemoveIndex(queryInterface, 'batches', ['start_date']);
+    await safeRemoveIndex(queryInterface, 'exams', ['batch_id', 'exam_date']);
+    await safeRemoveIndex(queryInterface, 'exams', ['course_id']);
+    await safeRemoveIndex(queryInterface, 'staff', ['department_id']);
+    await safeRemoveIndex(queryInterface, 'staff', ['email']);
+    await safeRemoveIndex(queryInterface, 'book_issues', ['student_id', 'status']);
+    await safeRemoveIndex(queryInterface, 'book_issues', ['book_id']);
+    await safeRemoveIndex(queryInterface, 'book_issues', ['due_date']);
+    await safeRemoveIndex(queryInterface, 'transaction_entries', ['transaction_id']);
+    await safeRemoveIndex(queryInterface, 'transaction_entries', ['account_head_id']);
+    await safeRemoveIndex(queryInterface, 'transactions', ['organization_id', 'transaction_date']);
+    await safeRemoveIndex(queryInterface, 'transactions', ['type']);
+    await safeRemoveIndex(queryInterface, 'attendance', ['student_id', 'date']);
+    await safeRemoveIndex(queryInterface, 'attendance', ['batch_id', 'date']);
+    await safeRemoveIndex(queryInterface, 'attendance', ['status']);
+    await safeRemoveIndex(queryInterface, 'fee_schedules', ['status']);
+    await safeRemoveIndex(queryInterface, 'fee_schedules', ['due_date']);
+    await safeRemoveIndex(queryInterface, 'fee_payments', ['payment_date']);
+    await safeRemoveIndex(queryInterface, 'leads', ['assigned_to']);
+    await safeRemoveIndex(queryInterface, 'leads', ['source']);
+    await safeRemoveIndex(queryInterface, 'leads', ['created_at']);
+    await safeRemoveIndex(queryInterface, 'students', ['email']);
+    await safeRemoveIndex(queryInterface, 'students', ['phone']);
+    await safeRemoveIndex(queryInterface, 'students', ['batch_id']);
   }
 };

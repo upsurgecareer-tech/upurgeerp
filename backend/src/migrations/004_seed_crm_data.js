@@ -1,45 +1,40 @@
-'use strict';
+const sequelize = require('../config/database');
 
-module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    // Check if data already exists
-    const [sources] = await queryInterface.sequelize.query('SELECT COUNT(*) as count FROM lead_sources');
-    
-    if (sources[0].count === 0) {
-      // Seed Lead Sources
-      await queryInterface.bulkInsert('lead_sources', [
-        { name: 'Google Ads', is_active: true },
-        { name: 'Facebook Ads', is_active: true },
-        { name: 'Just Dial', is_active: true },
-        { name: 'Walk-in', is_active: true },
-        { name: 'Reference', is_active: true },
-        { name: 'Website', is_active: true },
-        { name: 'Instagram', is_active: true },
-        { name: 'LinkedIn', is_active: true }
-      ]);
-    }
+async function up() {
+  // Seed Lead Sources
+  await sequelize.query(`
+    INSERT INTO lead_sources (name, is_active) VALUES
+    ('Google Ads', TRUE),
+    ('Facebook Ads', TRUE),
+    ('Just Dial', TRUE),
+    ('Walk-in', TRUE),
+    ('Reference', TRUE),
+    ('Website', TRUE),
+    ('Instagram', TRUE),
+    ('LinkedIn', TRUE)
+    ON DUPLICATE KEY UPDATE name=name;
+  `);
 
-    const [stages] = await queryInterface.sequelize.query('SELECT COUNT(*) as count FROM lead_stages');
-    
-    if (stages[0].count === 0) {
-      // Seed Lead Stages
-      await queryInterface.bulkInsert('lead_stages', [
-        { name: 'New', order_sequence: 1, color_code: '#2196F3' },
-        { name: 'Contacted', order_sequence: 2, color_code: '#4CAF50' },
-        { name: 'Demo Scheduled', order_sequence: 3, color_code: '#FF9800' },
-        { name: 'Demo Done', order_sequence: 4, color_code: '#9C27B0' },
-        { name: 'Follow-Up', order_sequence: 5, color_code: '#FFC107' },
-        { name: 'Admission', order_sequence: 6, color_code: '#4CAF50' },
-        { name: 'Lost', order_sequence: 7, color_code: '#F44336' }
-      ]);
-    }
+  // Seed Lead Stages
+  await sequelize.query(`
+    INSERT INTO lead_stages (name, order_sequence, color_code) VALUES
+    ('New', 1, '#2196F3'),
+    ('Contacted', 2, '#4CAF50'),
+    ('Demo Scheduled', 3, '#FF9800'),
+    ('Demo Done', 4, '#9C27B0'),
+    ('Follow-Up', 5, '#FFC107'),
+    ('Admission', 6, '#4CAF50'),
+    ('Lost', 7, '#F44336')
+    ON DUPLICATE KEY UPDATE name=name;
+  `);
 
-    console.log('✅ CRM seed data inserted successfully');
-  },
+  console.log('✅ CRM seed data inserted successfully');
+}
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('lead_stages', null, {});
-    await queryInterface.bulkDelete('lead_sources', null, {});
-    console.log('✅ CRM seed data removed successfully');
-  }
-};
+async function down() {
+  await sequelize.query('DELETE FROM lead_stages');
+  await sequelize.query('DELETE FROM lead_sources');
+  console.log('✅ CRM seed data removed successfully');
+}
+
+module.exports = { up, down };

@@ -19,7 +19,7 @@ async function up() {
     const organization_id = orgs[0]?.id || 1;
 
     // Get role ID (default to 3 - Staff/Employee)
-    const [roles] = await sequelize.query('SELECT id FROM roles WHERE name = "Staff" OR name = "Employee" LIMIT 1');
+    const [roles] = await sequelize.query('SELECT id FROM roles WHERE name = ? OR name = ? LIMIT 1', { replacements: ['Staff', 'Employee'] });
     const role_id = roles[0]?.id || 3;
 
     // Get departments
@@ -100,43 +100,58 @@ async function up() {
     const createdEmployees = [];
 
     for (const emp of sampleEmployees) {
-      // Find department
-      const dept = departments.find(d => d.name === emp.department);
-      const department_id = dept?.id || null;
+      try {
+        // Check if user already exists
+        const [existingUser] = await sequelize.query('SELECT id FROM users WHERE email = ? LIMIT 1', { replacements: [emp.email] });
+        if (existingUser.length > 0) {
+          const user_id = existingUser[0].id;
+          const [existingEmp] = await sequelize.query('SELECT id FROM employees WHERE user_id = ? LIMIT 1', { replacements: [user_id] });
+          const employee_id = existingEmp[0]?.id || 1;
+          createdEmployees.push({ employee_id, user_id, name: `${emp.first_name} ${emp.last_name}` });
+          console.log(`⚠️ Existing user: ${emp.first_name} ${emp.last_name} (${emp.designation})`);
+          continue;
+        }
 
-      // Create user
-      const password_hash = await bcrypt.hash('password123', 12);
-      const username = emp.email.split('@')[0];
+        // Find department
+        const dept = departments.find(d => d.name === emp.department);
+        const department_id = dept?.id || null;
 
-      const [userResult] = await sequelize.query(
-        `INSERT INTO users (organization_id, branch_id, role_id, username, email, password_hash, first_name, last_name, phone, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())`,
-        { replacements: [organization_id, branch_id, role_id, username, emp.email, password_hash, emp.first_name, emp.last_name, emp.phone] }
-      );
+        // Create user
+        const password_hash = await bcrypt.hash('password123', 12);
+        const username = emp.email.split('@')[0];
 
-      const user_id = userResult;
+        const [userResult] = await sequelize.query(
+          `INSERT INTO users (organization_id, branch_id, role_id, username, email, password_hash, first_name, last_name, phone, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())`,
+          { replacements: [organization_id, branch_id, role_id, username, emp.email, password_hash, emp.first_name, emp.last_name, emp.phone] }
+        );
 
-      // Create employee
-      const employee_code = `EMP${branch_id}${String(user_id).padStart(4, '0')}`;
+        const user_id = userResult;
 
-      const [empResult] = await sequelize.query(
-        `INSERT INTO employees (user_id, employee_code, department_id, designation, joining_date, employment_type, date_of_birth, gender, blood_group, address, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active', NOW(), NOW())`,
-        { replacements: [user_id, employee_code, department_id, emp.designation, emp.joining_date, emp.employment_type, emp.date_of_birth, emp.gender, emp.blood_group, 'Sample Address, City, State'] }
-      );
+        // Create employee
+        const employee_code = `EMP${branch_id}${String(user_id).padStart(4, '0')}`;
 
-      const employee_id = empResult;
+        const [empResult] = await sequelize.query(
+          `INSERT INTO employees (user_id, employee_code, department_id, designation, joining_date, employment_type, date_of_birth, gender, blood_group, address, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active', NOW(), NOW())`,
+          { replacements: [user_id, employee_code, department_id, emp.designation, emp.joining_date, emp.employment_type, emp.date_of_birth, emp.gender, emp.blood_group, 'Sample Address, City, State'] }
+        );
 
-      // Create leave balance
-      await sequelize.query(
-        `INSERT INTO leave_balances (employee_id, year, sick_leave, casual_leave, earned_leave, sick_leave_used, casual_leave_used, earned_leave_used, created_at, updated_at)
-         VALUES (?, 2024, 12, 12, 15, 0, 0, 0, NOW(), NOW())`,
-        { replacements: [employee_id] }
-      );
+        const employee_id = empResult;
 
-      createdEmployees.push({ employee_id, user_id, name: `${emp.first_name} ${emp.last_name}` });
+        // Create leave balance
+        await sequelize.query(
+          `INSERT INTO leave_balances (employee_id, year, sick_leave, casual_leave, earned_leave, sick_leave_used, casual_leave_used, earned_leave_used, created_at, updated_at)
+           VALUES (?, 2024, 12, 12, 15, 0, 0, 0, NOW(), NOW())`,
+          { replacements: [employee_id] }
+        );
 
-      console.log(`✅ Created: ${emp.first_name} ${emp.last_name} (${emp.designation})`);
+        createdEmployees.push({ employee_id, user_id, name: `${emp.first_name} ${emp.last_name}` });
+
+        console.log(`✅ Created: ${emp.first_name} ${emp.last_name} (${emp.designation})`);
+      } catch (err) {
+        console.log(`⚠️ Skipped employee ${emp.first_name}: ${err.message}`);
+      }
     }
 
     console.log(`\n✅ Created ${createdEmployees.length} employees\n`);
@@ -153,25 +168,29 @@ async function up() {
     ];
 
     for (const leave of leaveData) {
-      const employee_id = createdEmployees[leave.employee_idx].employee_id;
-      const user_id = createdEmployees[0].user_id; // First user as approver
+      try {
+        const employee_id = createdEmployees[leave.employee_idx].employee_id;
+        const user_id = createdEmployees[0].user_id; // First user as approver
 
-      await sequelize.query(
-        `INSERT INTO leaves (employee_id, leave_type, start_date, end_date, total_days, reason, status, approved_by, approved_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())`,
-        { replacements: [employee_id, leave.leave_type, leave.start_date, leave.end_date, leave.days, leave.reason, leave.status, user_id] }
-      );
-
-      // Update leave balance if approved
-      if (leave.status === 'Approved') {
-        const field = `${leave.leave_type.toLowerCase()}_leave_used`;
         await sequelize.query(
-          `UPDATE leave_balances SET ${field} = ${field} + ? WHERE employee_id = ? AND year = 2024`,
-          { replacements: [leave.days, employee_id] }
+          `INSERT INTO leaves (employee_id, leave_type, start_date, end_date, total_days, reason, status, approved_by, approved_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())`,
+          { replacements: [employee_id, leave.leave_type, leave.start_date, leave.end_date, leave.days, leave.reason, leave.status, user_id] }
         );
-      }
 
-      console.log(`✅ Leave: ${createdEmployees[leave.employee_idx].name} - ${leave.leave_type} (${leave.status})`);
+        // Update leave balance if approved
+        if (leave.status === 'Approved') {
+          const field = `${leave.leave_type.toLowerCase()}_leave_used`;
+          await sequelize.query(
+            `UPDATE leave_balances SET ${field} = ${field} + ? WHERE employee_id = ? AND year = 2024`,
+            { replacements: [leave.days, employee_id] }
+          );
+        }
+
+        console.log(`✅ Leave: ${createdEmployees[leave.employee_idx].name} - ${leave.leave_type} (${leave.status})`);
+      } catch (err) {
+        console.log(`⚠️ Skipped leave: ${err.message}`);
+      }
     }
 
     console.log(`\n✅ Created ${leaveData.length} leave applications\n`);
@@ -187,17 +206,21 @@ async function up() {
     ];
 
     for (const perf of performanceData) {
-      const employee_id = createdEmployees[perf.employee_idx].employee_id;
-      const reviewer_id = createdEmployees[3].user_id; // Project Manager as reviewer
-      const overall = ((perf.tech + perf.comm + perf.team + perf.punct + perf.quality) / 5).toFixed(2);
+      try {
+        const employee_id = createdEmployees[perf.employee_idx].employee_id;
+        const reviewer_id = createdEmployees[3].user_id; // Project Manager as reviewer
+        const overall = ((perf.tech + perf.comm + perf.team + perf.punct + perf.quality) / 5).toFixed(2);
 
-      await sequelize.query(
-        `INSERT INTO performances (employee_id, review_period, reviewer_id, technical_skills, communication, teamwork, punctuality, quality_of_work, overall_rating, strengths, areas_of_improvement, goals, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Submitted', NOW(), NOW())`,
-        { replacements: [employee_id, perf.period, reviewer_id, perf.tech, perf.comm, perf.team, perf.punct, perf.quality, overall, perf.strengths, perf.improvements, perf.goals] }
-      );
+        await sequelize.query(
+          `INSERT INTO performances (employee_id, review_period, reviewer_id, technical_skills, communication, teamwork, punctuality, quality_of_work, overall_rating, strengths, areas_of_improvement, goals, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Submitted', NOW(), NOW())`,
+          { replacements: [employee_id, perf.period, reviewer_id, perf.tech, perf.comm, perf.team, perf.punct, perf.quality, overall, perf.strengths, perf.improvements, perf.goals] }
+        );
 
-      console.log(`✅ Performance: ${createdEmployees[perf.employee_idx].name} - ${perf.period} (${overall}/5)`);
+        console.log(`✅ Performance: ${createdEmployees[perf.employee_idx].name} - ${perf.period} (${overall}/5)`);
+      } catch (err) {
+        console.log(`⚠️ Skipped performance: ${err.message}`);
+      }
     }
 
     console.log(`\n✅ Created ${performanceData.length} performance reviews\n`);

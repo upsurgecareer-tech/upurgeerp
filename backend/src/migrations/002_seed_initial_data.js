@@ -5,7 +5,8 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     // Check if organization already exists
     const [orgs] = await queryInterface.sequelize.query(
-      'SELECT id FROM organizations WHERE email = "info@upsurgeinfotech.com"'
+      'SELECT id FROM organizations WHERE email = ?',
+      { replacements: ['info@upsurgeinfotech.com'] }
     );
     
     if (orgs.length === 0) {
@@ -20,7 +21,8 @@ module.exports = {
 
     // Check if branch already exists
     const [branches] = await queryInterface.sequelize.query(
-      'SELECT id FROM branches WHERE code = "BR001"'
+      'SELECT id FROM branches WHERE code = ?',
+      { replacements: ['BR001'] }
     );
     
     if (branches.length === 0) {
@@ -60,25 +62,26 @@ module.exports = {
 
     // Check if admin user already exists
     const [users] = await queryInterface.sequelize.query(
-      'SELECT id FROM users WHERE email = "admin@upsurgeerp.com"'
+      'SELECT id FROM users WHERE email = ?',
+      { replacements: ['admin@upsurgeerp.com'] }
     );
     
     if (users.length === 0) {
       // Create default admin user
       const hashedPassword = await bcrypt.hash('admin123', 12);
       await queryInterface.sequelize.query(
-        'INSERT INTO users (branch_id, role_id, username, email, password_hash, first_name, last_name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+        'INSERT INTO users (organization_id, branch_id, role_id, username, email, password_hash, first_name, last_name, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
         {
-          replacements: [1, 1, 'admin', 'admin@upsurgeerp.com', hashedPassword, 'Super', 'Admin', 'active']
+          replacements: [1, 1, 1, 'admin', 'admin@upsurgeerp.com', hashedPassword, 'Super', 'Admin', 'active']
         }
       );
     }
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.sequelize.query('DELETE FROM users WHERE email = "admin@upsurgeerp.com"');
+    await queryInterface.sequelize.query('DELETE FROM users WHERE email = ?', { replacements: ['admin@upsurgeerp.com'] });
     await queryInterface.sequelize.query('DELETE FROM roles');
-    await queryInterface.sequelize.query('DELETE FROM branches WHERE code = "BR001"');
-    await queryInterface.sequelize.query('DELETE FROM organizations WHERE email = "info@upsurgeinfotech.com"');
+    await queryInterface.sequelize.query('DELETE FROM branches WHERE code = ?', { replacements: ['BR001'] });
+    await queryInterface.sequelize.query('DELETE FROM organizations WHERE email = ?', { replacements: ['info@upsurgeinfotech.com'] });
   }
 };

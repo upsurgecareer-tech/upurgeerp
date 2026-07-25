@@ -9,6 +9,12 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
     dialect: 'mysql',
+    dialectOptions: process.env.DB_HOST && (process.env.DB_HOST.includes('aivencloud') || process.env.DB_SSL === 'true') ? {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    } : {},
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
       max: 10,

@@ -1,0 +1,26 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      name: "Quick test"
+  
+  ensure:
+    maxErrorRate: 5
+    p95: 300
+
+scenarios:
+  - name: "Health Check"
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "API Documentation"
+    flow:
+      - get:
+          url: "/api-docs"
+          expect:
+            - statusCode: [200, 301]

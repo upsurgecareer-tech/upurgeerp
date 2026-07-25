@@ -4,16 +4,16 @@ FROM node:18-alpine
 # Set working directory inside container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package.json and package-lock.json from backend directory
+COPY backend/package*.json ./
 
 # Install dependencies
 RUN npm install --production
 
 # Copy all backend source code
-COPY . ./
+COPY backend/ ./
 
-# Expose backend port
+# Expose backend port (default 5000 or Render PORT)
 EXPOSE 5000
 
 # Start server (running migrations first)

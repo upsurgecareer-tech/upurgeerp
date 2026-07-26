@@ -16,5 +16,5 @@ COPY . ./
 # Expose backend port
 EXPOSE 5000
 
-# Start server (running migrations first)
-CMD ["sh", "-c", "npm run migrate && npm start"]
+# Start server directly (migrations are already completed in Aiven DB)
+CMD ["npm", "start"]

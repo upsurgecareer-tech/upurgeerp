@@ -2,9 +2,13 @@ import axios from 'axios';
 
 // Get the correct API URL dynamically
 const getApiUrl = () => {
-  // If explicitly set in env and it's not localhost, use it
-  if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')) {
-    return import.meta.env.VITE_API_URL;
+  let url = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL;
+  if (url && !url.includes('localhost')) {
+    url = url.replace(/\/+$/, '');
+    if (!url.endsWith('/api/v1')) {
+      url = `${url}/api/v1`;
+    }
+    return url;
   }
   
   // Construct based on current hostname (works for localhost and network IPs)

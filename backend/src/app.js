@@ -17,8 +17,8 @@ app.use(helmet());
 
 // CORS Configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN === '*' ? '*' : process.env.CORS_ORIGIN,
-  credentials: process.env.CORS_ORIGIN !== '*'
+  origin: true, // Allow all frontend domains (Vercel, localhost, etc.)
+  credentials: true
 }));
 
 // Rate Limiting

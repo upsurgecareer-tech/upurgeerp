@@ -55,4 +55,23 @@ router.post('/integrations', authenticate, validate(integrationSchema), (req, re
   res.status(201).json({ message: 'Integration created successfully', data: req.body });
 });
 
+// Seed 100+ Demo Records (open for testing/verification)
+router.get('/seed-demo-data', async (req, res) => {
+  try {
+    const seeder = require('../migrations/021_seed_100_demo_records');
+    const result = await seeder.up();
+    res.json({
+      status: 'success',
+      message: 'Successfully seeded 100+ comprehensive demo records across all ERP modules!',
+      details: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to seed demo data',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -46,9 +46,18 @@ const testConnection = async () => {
     console.log('✅ Database connection established successfully');
     // Require models so Sequelize registers all 64 definitions before syncing
     try {
-      require('../models');
+      const models = require('../models');
       await sequelize.sync({ alter: false });
       console.log('✅ All 64 database tables synced successfully');
+
+      // Auto-seed demo data if database is empty or has very few students
+      const studentCount = await models.Student.count().catch(() => 0);
+      if (studentCount < 50) {
+        console.log('🔄 Student count is low (<50). Running comprehensive 100-record demo seeder...');
+        const seeder = require('../migrations/021_seed_100_demo_records');
+        await seeder.up().catch(e => console.error('⚠️ Seeding error:', e.message));
+        console.log('✅ Auto-seeding completed on startup!');
+      }
     } catch (syncErr) {
       console.error('⚠️ Table sync warning:', syncErr.message);
     }

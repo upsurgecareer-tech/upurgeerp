@@ -6,15 +6,9 @@ const {
   FeeSchedule, 
   FeePayment, 
   Lead, 
-  Employee, 
-  Department,
-  Exam,
-  ExamAttempt,
-  LibraryBook,
-  InventoryItem,
-  AccountHead,
-  TransactionEntry,
-  Notice
+  LibraryBook, 
+  InventoryItem, 
+  Notice 
 } = require('../models');
 const sequelize = require('../config/database');
 
@@ -22,14 +16,12 @@ const firstNames = [
   'Aarav', 'Vihaan', 'Aditya', 'Sai', 'Arjun', 'Rohan', 'Ananya', 'Diya', 'Ishita', 'Kavya',
   'Pooja', 'Rhea', 'Rahul', 'Vikram', 'Siddharth', 'Neha', 'Priya', 'Sanjay', 'Amit', 'Karan',
   'Divya', 'Sneha', 'Tanvi', 'Kritika', 'Yash', 'Mohit', 'Harsh', 'Mayank', 'Pranav', 'Nikhil',
-  'Roshni', 'Swati', 'Meera', 'Tarun', 'Deepak', 'Alok', 'Manoj', 'Varun', 'Ritik', 'Shreya',
-  'Simran', 'Akash', 'Gaurav', 'Manish', 'Pankaj', 'Sonam', 'Jyoti', 'Anita', 'Vikas', 'Ashish'
+  'Roshni', 'Swati', 'Meera', 'Tarun', 'Deepak', 'Alok', 'Manoj', 'Varun', 'Ritik', 'Shreya'
 ];
 
 const lastNames = [
   'Sharma', 'Verma', 'Patel', 'Singh', 'Gupta', 'Kumar', 'Reddy', 'Rao', 'Joshi', 'Nair',
-  'Mehta', 'Chopra', 'Malhotra', 'Bhatia', 'Saxena', 'Iyer', 'Menon', 'Das', 'Roy', 'Ghosh',
-  'Chauhan', 'Thakur', 'Yadav', 'Mishra', 'Pandey', 'Tiwari', 'Dubey', 'Agarwal', 'Bansal', 'Goyal'
+  'Mehta', 'Chopra', 'Malhotra', 'Bhatia', 'Saxena', 'Iyer', 'Menon', 'Das', 'Roy', 'Ghosh'
 ];
 
 const courses = [
@@ -42,6 +34,27 @@ const courses = [
 async function up() {
   try {
     console.log('🚀 Starting Comprehensive 100+ Demo Records Seeding across all ERP Modules...');
+
+    // 0. Ensure table schemas match Sequelize models (add columns if missing)
+    const alterQueries = [
+      "ALTER TABLE students ADD COLUMN gender ENUM('Male', 'Female', 'Other') NULL;",
+      "ALTER TABLE students ADD COLUMN city VARCHAR(100) NULL;",
+      "ALTER TABLE students ADD COLUMN state VARCHAR(100) NULL;",
+      "ALTER TABLE students ADD COLUMN status VARCHAR(20) DEFAULT 'Active';",
+      "ALTER TABLE admissions ADD COLUMN net_payable DECIMAL(10, 2) NULL;",
+      "ALTER TABLE admissions ADD COLUMN discount_amount DECIMAL(10, 2) DEFAULT 0;",
+      "ALTER TABLE fee_schedules ADD COLUMN installment_no INT NULL;",
+      "ALTER TABLE fee_schedules ADD COLUMN status ENUM('Pending', 'Paid', 'Overdue') DEFAULT 'Pending';",
+      "ALTER TABLE fee_payments MODIFY COLUMN payment_mode VARCHAR(50) DEFAULT 'Cash';",
+      "ALTER TABLE library_books ADD COLUMN quantity INT DEFAULT 1;",
+      "ALTER TABLE library_books ADD COLUMN available_quantity INT DEFAULT 1;",
+      "ALTER TABLE notices ADD COLUMN publish_date DATE NULL;",
+      "ALTER TABLE notices ADD COLUMN status ENUM('Draft', 'Published', 'Expired') DEFAULT 'Published';"
+    ];
+
+    for (const q of alterQueries) {
+      await sequelize.query(q).catch(() => {});
+    }
 
     // 1. Ensure basic course packages and batches exist
     for (const c of courses) {
@@ -74,6 +87,7 @@ async function up() {
 
     // 2. Seed 100 Students & Admissions & Fee Schedules & Fee Payments
     console.log('📚 Seeding 100 Students, Admissions, and Fee Payments...');
+    let seededStudents = 0;
     for (let i = 1; i <= 100; i++) {
       const fName = firstNames[i % firstNames.length];
       const lName = lastNames[(i * 3) % lastNames.length];
@@ -81,25 +95,24 @@ async function up() {
       const email = `student${i + 100}@upsurgeerp.demo`;
       const phone = `98765${String(10000 + i).slice(-5)}`;
 
-      // Create or find student
       let student = await Student.findOne({ where: { email } });
       if (!student) {
         student = await Student.create({
           branch_id: 1,
           name: name,
           email: email,
-          phone: phone,
+          mobile: phone,
           gender: i % 2 === 0 ? 'Female' : 'Male',
           dob: '2003-06-15',
           address: `${100 + i}, Tech Park Boulevard, Silicon City`,
           city: 'Bangalore',
           state: 'Karnataka',
-          status: 'active'
+          status: 'Active'
         }).catch(() => null);
       }
 
       if (student) {
-        // Create Admission
+        seededStudents++;
         const courseIdx = i % courses.length;
         const course = courses[courseIdx];
         const batchId = (i % 3) + 1;
@@ -114,38 +127,36 @@ async function up() {
             status: 'Active',
             total_fee: course.fee,
             discount_amount: 0,
-            net_fee: course.fee
+            net_payable: course.fee
           }).catch(() => null);
         }
 
         if (admission) {
-          // Create 2 Fee Schedules
           const installmentAmount = course.fee / 2;
-          const isPaid = i <= 75; // 75% paid students
+          const isPaid = i <= 75;
 
-          let sched1 = await FeeSchedule.findOne({ where: { admission_id: admission.id, installment_number: 1 } });
+          let sched1 = await FeeSchedule.findOne({ where: { admission_id: admission.id, installment_no: 1 } });
           if (!sched1) {
             sched1 = await FeeSchedule.create({
               admission_id: admission.id,
-              installment_number: 1,
+              installment_no: 1,
               due_date: '2026-05-15',
               amount: installmentAmount,
               status: isPaid ? 'Paid' : 'Pending'
             }).catch(() => null);
           }
 
-          let sched2 = await FeeSchedule.findOne({ where: { admission_id: admission.id, installment_number: 2 } });
+          let sched2 = await FeeSchedule.findOne({ where: { admission_id: admission.id, installment_no: 2 } });
           if (!sched2) {
             sched2 = await FeeSchedule.create({
               admission_id: admission.id,
-              installment_number: 2,
+              installment_no: 2,
               due_date: '2026-08-15',
               amount: installmentAmount,
               status: i <= 30 ? 'Paid' : 'Pending'
             }).catch(() => null);
           }
 
-          // Create Fee Payment for Paid schedules
           if (sched1 && isPaid) {
             const rcpNo = `RCP${String(100000 + i)}`;
             const existingPay = await FeePayment.findOne({ where: { receipt_no: rcpNo } });
@@ -154,7 +165,7 @@ async function up() {
                 fee_schedule_id: sched1.id,
                 admission_id: admission.id,
                 amount_paid: installmentAmount,
-                payment_mode: i % 3 === 0 ? 'Online' : (i % 2 === 0 ? 'UPI' : 'Cash'),
+                payment_mode: i % 2 === 0 ? 'Online' : 'Cash',
                 payment_date: '2026-05-14',
                 receipt_no: rcpNo,
                 received_by: 1,
@@ -167,7 +178,7 @@ async function up() {
     }
 
     // 3. Seed 100 CRM Leads
-    console.log('📈 Seeding 100 CRM Leads and Pipeline Data...');
+    console.log('📈 Seeding 100 CRM Leads...');
     const leadSources = ['Website Form', 'Google Ads', 'Referral', 'Walk-In Enquiry', 'Social Media Campaign'];
     const leadStages = ['New', 'Contacted', 'Demo Scheduled', 'Interested', 'Converted'];
     for (let j = 1; j <= 100; j++) {
@@ -182,17 +193,18 @@ async function up() {
           branch_id: 1,
           name: `${fName} ${lName}`,
           email: email,
-          phone: mobile,
-          course_interested: courses[j % courses.length].name,
+          mobile: mobile,
+          course_interest: courses[j % courses.length].name,
           source: leadSources[j % leadSources.length],
-          status: leadStages[j % leadStages.length],
+          stage: leadStages[j % leadStages.length],
+          status: 'Active',
           assigned_to: 1,
-          notes: `Enquiry for ${courses[j % courses.length].name}. Needs follow up.`
+          remarks: `Enquiry for ${courses[j % courses.length].name}. Needs follow up.`
         }).catch(() => {});
       }
     }
 
-    // 4. Seed 20 Library Books & Inventory Items
+    // 4. Seed Library Books & Inventory Items
     console.log('📖 Seeding Library Books and Inventory Assets...');
     const books = [
       'Clean Code: A Handbook of Agile Software Craftsmanship',
@@ -212,13 +224,14 @@ async function up() {
       await LibraryBook.findOrCreate({
         where: { isbn },
         defaults: {
+          branch_id: 1,
           title: books[k],
           author: k % 2 === 0 ? 'Robert C. Martin' : 'Kyle Simpson',
           category: 'Computer Science',
           isbn: isbn,
-          total_copies: 10,
-          available_copies: 8,
-          branch_id: 1
+          quantity: 10,
+          available_quantity: 8,
+          status: 'Available'
         }
       }).catch(() => {});
     }
@@ -260,14 +273,14 @@ async function up() {
           branch_id: 1,
           title: n.title,
           content: n.content,
-          date: new Date(),
-          is_active: true
+          publish_date: new Date(),
+          status: 'Published'
         }
       }).catch(() => {});
     }
 
     console.log('🎉 100+ Comprehensive Demo Records Seeded Successfully across ALL modules!');
-    return { status: 'success', message: 'Seeded 100+ demo records across Students, Admissions, Fees, CRM Leads, Library, and Inventory!' };
+    return { status: 'success', message: `Seeded ${seededStudents} Students, Admissions, Fees, CRM Leads, Library Books, and Inventory Assets!` };
   } catch (err) {
     console.error('❌ Seeding error:', err.message);
     throw err;

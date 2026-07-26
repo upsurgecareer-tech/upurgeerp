@@ -10,6 +10,7 @@ router.use(authenticate);
 // Account Heads
 router.post('/account-heads', validate(createAccountHeadSchema), accountingController.createAccountHead);
 router.get('/account-heads', accountingController.getAccountHeads);
+router.get('/accounts', accountingController.getAccountHeads);
 
 // Transactions
 router.post('/transactions', validate(createTransactionSchema), accountingController.createTransaction);

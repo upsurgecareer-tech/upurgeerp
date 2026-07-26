@@ -50,6 +50,34 @@ const testConnection = async () => {
       await sequelize.sync({ alter: false });
       console.log('✅ All 64 database tables synced successfully');
 
+      // Run fast schema alignment queries to guarantee all columns exist across modules
+      const alterQueries = [
+        "ALTER TABLE students ADD COLUMN gender ENUM('Male', 'Female', 'Other') NULL;",
+        "ALTER TABLE students ADD COLUMN city VARCHAR(100) NULL;",
+        "ALTER TABLE students ADD COLUMN state VARCHAR(100) NULL;",
+        "ALTER TABLE students ADD COLUMN status VARCHAR(20) DEFAULT 'Active';",
+        "ALTER TABLE admissions ADD COLUMN net_payable DECIMAL(10, 2) NULL;",
+        "ALTER TABLE admissions ADD COLUMN discount_amount DECIMAL(10, 2) DEFAULT 0;",
+        "ALTER TABLE fee_schedules ADD COLUMN installment_no INT NULL;",
+        "ALTER TABLE fee_schedules ADD COLUMN status ENUM('Pending', 'Paid', 'Overdue') DEFAULT 'Pending';",
+        "ALTER TABLE fee_payments MODIFY COLUMN payment_mode VARCHAR(50) DEFAULT 'Cash';",
+        "ALTER TABLE fee_payments ADD COLUMN remarks TEXT NULL;",
+        "ALTER TABLE library_books ADD COLUMN quantity INT DEFAULT 1;",
+        "ALTER TABLE library_books ADD COLUMN available_quantity INT DEFAULT 1;",
+        "ALTER TABLE notices ADD COLUMN target_audience VARCHAR(50) DEFAULT 'All';",
+        "ALTER TABLE notices ADD COLUMN publish_date DATE NULL;",
+        "ALTER TABLE notices ADD COLUMN expiry_date DATE NULL;",
+        "ALTER TABLE notices ADD COLUMN attachment_url VARCHAR(500) NULL;",
+        "ALTER TABLE notices ADD COLUMN status VARCHAR(50) DEFAULT 'Published';",
+        "ALTER TABLE leads ADD COLUMN source VARCHAR(100) NULL;",
+        "ALTER TABLE leads ADD COLUMN priority VARCHAR(50) DEFAULT 'Warm';",
+        "ALTER TABLE leads ADD COLUMN remarks TEXT NULL;",
+        "ALTER TABLE leads MODIFY COLUMN source_id INT NULL;"
+      ];
+      for (const q of alterQueries) {
+        await sequelize.query(q).catch(() => {});
+      }
+
       // Auto-seed demo data if database is empty or has very few students
       const studentCount = await models.Student.count().catch(() => 0);
       if (studentCount < 50) {

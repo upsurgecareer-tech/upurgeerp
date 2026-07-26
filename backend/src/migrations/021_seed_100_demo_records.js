@@ -26,14 +26,7 @@ const lastNames = [
 
 async function up() {
   try {
-    console.log('🚀 Checking database state for demo seeding...');
-    const existingStudents = await Student.count().catch(() => 0);
-    if (existingStudents >= 50) {
-      console.log('✅ Database already contains 50+ students. Skipping heavy seeding.');
-      return { status: 'success', message: `Database already contains ${existingStudents} students and full ERP demo records! All modules are ready for testing.` };
-    }
-
-    console.log('🔄 Running fast schema alignments...');
+    console.log('🔄 Running fast schema alignments across all tables...');
     const alterQueries = [
       "ALTER TABLE students ADD COLUMN gender ENUM('Male', 'Female', 'Other') NULL;",
       "ALTER TABLE students ADD COLUMN city VARCHAR(100) NULL;",
@@ -44,14 +37,29 @@ async function up() {
       "ALTER TABLE fee_schedules ADD COLUMN installment_no INT NULL;",
       "ALTER TABLE fee_schedules ADD COLUMN status ENUM('Pending', 'Paid', 'Overdue') DEFAULT 'Pending';",
       "ALTER TABLE fee_payments MODIFY COLUMN payment_mode VARCHAR(50) DEFAULT 'Cash';",
+      "ALTER TABLE fee_payments ADD COLUMN remarks TEXT NULL;",
       "ALTER TABLE library_books ADD COLUMN quantity INT DEFAULT 1;",
       "ALTER TABLE library_books ADD COLUMN available_quantity INT DEFAULT 1;",
+      "ALTER TABLE notices ADD COLUMN target_audience VARCHAR(50) DEFAULT 'All';",
       "ALTER TABLE notices ADD COLUMN publish_date DATE NULL;",
-      "ALTER TABLE notices ADD COLUMN status ENUM('Draft', 'Published', 'Expired') DEFAULT 'Published';"
+      "ALTER TABLE notices ADD COLUMN expiry_date DATE NULL;",
+      "ALTER TABLE notices ADD COLUMN attachment_url VARCHAR(500) NULL;",
+      "ALTER TABLE notices ADD COLUMN status VARCHAR(50) DEFAULT 'Published';",
+      "ALTER TABLE leads ADD COLUMN source VARCHAR(100) NULL;",
+      "ALTER TABLE leads ADD COLUMN priority VARCHAR(50) DEFAULT 'Warm';",
+      "ALTER TABLE leads ADD COLUMN remarks TEXT NULL;",
+      "ALTER TABLE leads MODIFY COLUMN source_id INT NULL;"
     ];
 
     for (const q of alterQueries) {
       await sequelize.query(q).catch(() => {});
+    }
+
+    console.log('🚀 Checking database state for demo seeding...');
+    const existingStudents = await Student.count().catch(() => 0);
+    if (existingStudents >= 50) {
+      console.log('✅ Database already contains 50+ students. Skipping heavy seeding.');
+      return { status: 'success', message: `Database already contains ${existingStudents} students and full ERP demo records! All modules are ready for testing.` };
     }
 
     // 1. Bulk Create Course Packages & Batches

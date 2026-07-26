@@ -6,6 +6,7 @@ const { authenticate } = require('../middlewares/auth');
 router.use(authenticate);
 
 // Dashboard
+router.get('/', reportsController.getDashboardStats);
 router.get('/dashboard', reportsController.getDashboardStats);
 
 // Reports

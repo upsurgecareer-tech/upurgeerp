@@ -162,3 +162,25 @@ exports.getFeeCollectionReport = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.getAllPayments = async (req, res) => {
+  try {
+    const { FeePayment, Admission, Student, CoursePackage } = require('../models');
+    const payments = await FeePayment.findAll({
+      include: [
+        {
+          model: Admission,
+          include: [
+            { model: Student, attributes: ['id', 'name', 'mobile', 'email', 'admission_no'] },
+            { model: CoursePackage, attributes: ['id', 'name'] }
+          ]
+        }
+      ],
+      order: [['payment_date', 'DESC'], ['id', 'DESC']],
+      limit: 100
+    });
+    res.json({ status: 'success', data: payments, payments });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Server error', error: error.message });
+  }
+};

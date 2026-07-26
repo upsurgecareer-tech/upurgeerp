@@ -9,6 +9,7 @@ router.post('/sessions', authenticate, validate(createAttendanceSessionSchema), 
 router.post('/qr', authenticate, validate(markAttendanceQRSchema), attendanceController.markAttendanceQR);
 router.post('/manual', authenticate, validate(markAttendanceManualSchema), attendanceController.markAttendanceManual);
 
+router.get('/', authenticate, attendanceController.getAllAttendance);
 router.get('/batch/:batchId', authenticate, attendanceController.getBatchAttendance);
 router.get('/student/:studentId', authenticate, attendanceController.getStudentAttendance);
 router.get('/at-risk', authenticate, attendanceController.getAttendanceAnalytics);

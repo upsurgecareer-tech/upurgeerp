@@ -203,3 +203,20 @@ exports.getQRCode = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.getAllAttendance = async (req, res) => {
+  try {
+    const { Attendance, Student, Batch } = require('../models');
+    const records = await Attendance.findAll({
+      include: [
+        { model: Student, attributes: ['id', 'name', 'admission_no'] },
+        { model: Batch, attributes: ['id', 'name'] }
+      ],
+      order: [['date', 'DESC']],
+      limit: 100
+    });
+    res.json({ status: 'success', data: records, attendance: records });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Server error', error: error.message });
+  }
+};

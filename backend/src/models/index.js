@@ -302,9 +302,82 @@ VideoWatchProgress.belongsTo(Student, { foreignKey: 'student_id', as: 'student' 
 LMSVideo.hasMany(VideoWatchProgress, { foreignKey: 'video_id', as: 'progressList' });
 VideoWatchProgress.belongsTo(LMSVideo, { foreignKey: 'video_id', as: 'video' });
 
+// Additional ERP Models
+const AccountingObj = require('./Accounting');
+const AccountHead = AccountingObj.AccountHead;
+const Transaction = AccountingObj.Transaction;
+const TransactionEntry = AccountingObj.TransactionEntry;
+const Expense = AccountingObj.Expense;
+
+const CommObj = require('./Communication');
+const Communication = CommObj.Communication;
+const CommunicationLog = CommObj.CommunicationLog;
+
+const Assignment = require('./Assignment');
+const AssignmentSubmission = require('./AssignmentSubmission');
+const AttendanceSession = require('./AttendanceSession');
+const BatchStudent = require('./BatchStudent');
+const Certificate = require('./Certificate');
+const ChatMessage = require('./ChatMessage');
+const Discount = require('./Discount');
+const Exam = require('./Exam');
+const ExamAttempt = require('./ExamAttempt');
+const FeePayment = require('./FeePayment');
+const LeadActivity = require('./LeadActivity');
+const LeadSource = require('./LeadSource');
+const LeadStage = require('./LeadStage');
+const LiveClass = require('./LiveClass');
+const Notice = require('./Notice');
+const Payroll = require('./Payroll');
+const PortalNotification = require('./PortalNotification');
+const QRCode = require('./QRCode');
+const QuestionBank = require('./QuestionBank');
+const SalaryStructure = require('./SalaryStructure');
+const StaffAttendance = require('./StaffAttendance');
+const Timetable = require('./Timetable');
+
 // Admission -> FeeSchedule
 Admission.hasMany(FeeSchedule, { foreignKey: 'admission_id', as: 'feeSchedules' });
 FeeSchedule.belongsTo(Admission, { foreignKey: 'admission_id', as: 'admission' });
+
+// FeePayment Associations
+FeePayment.belongsTo(Admission, { foreignKey: 'admission_id', as: 'admission' });
+FeePayment.belongsTo(Admission, { foreignKey: 'admission_id', as: 'Admission' });
+Admission.hasMany(FeePayment, { foreignKey: 'admission_id', as: 'feePayments' });
+Admission.hasMany(FeePayment, { foreignKey: 'admission_id', as: 'FeePayments' });
+
+FeePayment.belongsTo(FeeSchedule, { foreignKey: 'fee_schedule_id', as: 'feeSchedule' });
+FeeSchedule.hasMany(FeePayment, { foreignKey: 'fee_schedule_id', as: 'feePayments' });
+FeePayment.belongsTo(User, { foreignKey: 'received_by', as: 'receiver' });
+
+// Ensure Admission belongsTo Student with both lowercase and uppercase aliases
+Admission.belongsTo(Student, { foreignKey: 'student_id', as: 'Student' });
+Student.hasMany(Admission, { foreignKey: 'student_id', as: 'Admissions' });
+
+// Exam & Portal Associations
+Exam.hasMany(ExamAttempt, { foreignKey: 'exam_id', as: 'attempts' });
+ExamAttempt.belongsTo(Exam, { foreignKey: 'exam_id', as: 'exam' });
+Student.hasMany(ExamAttempt, { foreignKey: 'student_id', as: 'examAttempts' });
+ExamAttempt.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
+Exam.belongsTo(Batch, { foreignKey: 'batch_id', as: 'batch' });
+Exam.belongsTo(CoursePackage, { foreignKey: 'course_package_id', as: 'coursePackage' });
+
+// Timetable & LiveClass
+Timetable.belongsTo(Batch, { foreignKey: 'batch_id', as: 'batch' });
+Timetable.belongsTo(Employee, { foreignKey: 'faculty_id', as: 'faculty' });
+LiveClass.belongsTo(Batch, { foreignKey: 'batch_id', as: 'batch' });
+LiveClass.belongsTo(Employee, { foreignKey: 'faculty_id', as: 'faculty' });
+Notice.belongsTo(Branch, { foreignKey: 'branch_id', as: 'branch' });
+
+// HRMS Payroll & Attendance
+Employee.hasOne(SalaryStructure, { foreignKey: 'employee_id', as: 'salaryStructure' });
+SalaryStructure.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
+Employee.hasMany(Payroll, { foreignKey: 'employee_id', as: 'payrolls' });
+Payroll.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
+Employee.hasMany(StaffAttendance, { foreignKey: 'employee_id', as: 'staffAttendances' });
+StaffAttendance.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
+Student.hasMany(Certificate, { foreignKey: 'student_id', as: 'certificates' });
+Certificate.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
 
 module.exports = {
   User,
@@ -342,5 +415,33 @@ module.exports = {
   StudyMaterial,
   LMSVideo,
   VideoWatchProgress,
-  FeeSchedule
+  FeeSchedule,
+  AccountHead,
+  Transaction,
+  TransactionEntry,
+  Expense,
+  Communication,
+  CommunicationLog,
+  Assignment,
+  AssignmentSubmission,
+  AttendanceSession,
+  BatchStudent,
+  Certificate,
+  ChatMessage,
+  Discount,
+  Exam,
+  ExamAttempt,
+  FeePayment,
+  LeadActivity,
+  LeadSource,
+  LeadStage,
+  LiveClass,
+  Notice,
+  Payroll,
+  PortalNotification,
+  QRCode,
+  QuestionBank,
+  SalaryStructure,
+  StaffAttendance,
+  Timetable
 };

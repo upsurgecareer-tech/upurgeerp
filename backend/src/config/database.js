@@ -39,11 +39,19 @@ const sequelize = new Sequelize(
   }
 );
 
-// Test connection without crashing the process if there is a temporary glitch
+// Test connection and sync tables without crashing the process if there is a temporary glitch
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully');
+    // Require models so Sequelize registers all 64 definitions before syncing
+    try {
+      require('../models');
+      await sequelize.sync({ alter: false });
+      console.log('✅ All 64 database tables synced successfully');
+    } catch (syncErr) {
+      console.error('⚠️ Table sync warning:', syncErr.message);
+    }
   } catch (error) {
     console.error('❌ Unable to connect to database:', error.message);
   }

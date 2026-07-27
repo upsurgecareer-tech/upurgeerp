@@ -7,7 +7,7 @@ const defaultPass = Buffer.from('QVZOU19zekg1N21VZFZnVEVWc1l1X0Mz', 'base64').to
 const dbPassword = process.env.DB_PASSWORD || defaultPass;
 const dbHost = (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && !process.env.DB_HOST.includes('127.0.0.1')) ? process.env.DB_HOST : 'mysql-b0c2561-upsurgecareer-ba86.i.aivencloud.com';
 const dbPort = process.env.DB_PORT || 21345;
-const isSsl = dbHost.includes('aivencloud') || process.env.DB_SSL === 'true';
+const isSsl = dbHost !== 'localhost' && !dbHost.includes('127.0.0.1') && dbHost !== 'mysql';
 
 const sequelize = new Sequelize(
   dbName,

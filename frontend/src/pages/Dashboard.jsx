@@ -45,7 +45,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const user = authService.getCurrentUser();
   const isFaculty = (user?.role_name || '').toLowerCase().trim() === 'faculty';
-  const isHRManager = (user?.role_name || '').toLowerCase().trim() === 'hr manager';
+  const isHRManager = ['hr manager', 'hr'].includes((user?.role_name || '').toLowerCase().trim());
 
   useEffect(() => {
     if (isHRManager) {

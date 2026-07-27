@@ -38,10 +38,21 @@ module.exports = {
     // Insert roles if not exist
     const roles = [
       ['Super Admin', 'Full system access', '{"all":true}'],
-      ['Branch Admin', 'Branch level access', '{"branch":true}'],
-      ['Faculty', 'Teaching and attendance access', '{"batches":true,"attendance":true}'],
-      ['Counsellor', 'CRM and admissions access', '{"leads":true,"admissions":true}'],
-      ['Cashier', 'Fee collection access', '{"fees":true}']
+      ['Branch Admin', 'Branch level access', '{"branch":true,"dashboard":true,"crm":true,"students":true,"lms":true,"hrms":true,"reports":true}'],
+      ['Faculty', 'Teaching and attendance access', '{"batches":true,"attendance":true,"students":true,"lms":true,"dashboard":true}'],
+      ['Counsellor', 'CRM and admissions access', '{"leads":true,"admissions":true,"crm":true,"students":true,"dashboard":true}'],
+      ['Cashier', 'Fee collection access', '{"fees":true,"receipts":true,"students":true,"dashboard":true}'],
+      ['HR', 'Human resources executive and attendance management access', '{"hrms":["read","write","manage"],"attendance":["read","write"],"staff":["read"],"reports":["read"]}'],
+      ['Counselling', 'Student counselling, CRM inquiries, and admissions access', '{"crm":["read","write","manage"],"leads":["read","write","manage"],"admissions":["read","write","manage"],"students":["read","write"],"dashboard":["read"]}'],
+      ['Accountant', 'Financial accounting, fee collection, and expense management', '{"fees":["read","write","manage"],"accounting":["read","write","manage"],"expenses":["read","write","manage"],"reports":["read","write"]}'],
+      ['Receptionist', 'Front desk operations, visitor logs, and initial inquiry handling', '{"inquiries":["read","write"],"visitors":["read","write","manage"],"students":["read"],"dashboard":["read"]}'],
+      ['Academic Coordinator', 'Batch scheduling, timetable planning, and exam coordination', '{"batches":["read","write","manage"],"courses":["read","write","manage"],"timetable":["read","write","manage"],"exams":["read","write","manage"],"students":["read","write"]}'],
+      ['Placement Officer', 'Corporate recruitment, student interviews, and placement drives', '{"placements":["read","write","manage"],"students":["read","write"],"companies":["read","write","manage"],"dashboard":["read"]}'],
+      ['Marketing Lead', 'Marketing campaigns, lead generation, and promotional analytics', '{"crm":["read","write","manage"],"campaigns":["read","write","manage"],"leads":["read","write","manage"],"dashboard":["read"]}'],
+      ['IT Admin', 'System administration, user access control, and security logs', '{"admin":["read","write","manage"],"users":["read","write","manage"],"settings":["read","write","manage"],"dashboard":["read"]}'],
+      ['Librarian', 'Library management, book circulation, and reading room monitoring', '{"library":["read","write","manage"],"books":["read","write","manage"],"students":["read"],"dashboard":["read"]}'],
+      ['Transport Manager', 'Bus route planning, vehicle maintenance, and transport tracking', '{"transport":["read","write","manage"],"vehicles":["read","write","manage"],"routes":["read","write","manage"],"students":["read"]}'],
+      ['Hostel Warden', 'Hostel accommodation, student allocation, and mess management', '{"hostel":["read","write","manage"],"rooms":["read","write","manage"],"mess":["read","write","manage"],"students":["read","write"]}']
     ];
 
     for (const [name, description, permissions] of roles) {

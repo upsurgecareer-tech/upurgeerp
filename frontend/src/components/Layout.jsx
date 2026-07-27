@@ -25,12 +25,23 @@ const drawerWidth = 240;
 
 // Role badge colors — match actual DB role names
 const roleBadge = {
-  'super admin':  { bg: '#fee2e2', color: '#991b1b', label: 'Super Admin' },
-  'branch admin': { bg: '#fef9c3', color: '#854d0e', label: 'Branch Admin' },
-  'faculty':      { bg: '#f0fdf4', color: '#166534', label: 'Faculty' },
-  'counsellor':   { bg: '#eff6ff', color: '#1d4ed8', label: 'Counsellor' },
-  'cashier':      { bg: '#fff7ed', color: '#9a3412', label: 'Cashier' },
-  'hr manager':   { bg: '#f3e8ff', color: '#7e22ce', label: 'HR Manager' },
+  'super admin':          { bg: '#fee2e2', color: '#991b1b', label: 'Super Admin' },
+  'branch admin':         { bg: '#fef9c3', color: '#854d0e', label: 'Branch Admin' },
+  'faculty':              { bg: '#f0fdf4', color: '#166534', label: 'Faculty' },
+  'counsellor':           { bg: '#eff6ff', color: '#1d4ed8', label: 'Counsellor' },
+  'counselling':          { bg: '#eff6ff', color: '#1d4ed8', label: 'Counselling' },
+  'cashier':              { bg: '#fff7ed', color: '#9a3412', label: 'Cashier' },
+  'hr':                   { bg: '#f3e8ff', color: '#7e22ce', label: 'HR' },
+  'hr manager':           { bg: '#f3e8ff', color: '#7e22ce', label: 'HR Manager' },
+  'accountant':           { bg: '#ecfdf5', color: '#047857', label: 'Accountant' },
+  'receptionist':         { bg: '#fdf2f8', color: '#be185d', label: 'Receptionist' },
+  'academic coordinator': { bg: '#e0f2fe', color: '#0369a1', label: 'Coordinator' },
+  'placement officer':    { bg: '#f0fdf4', color: '#15803d', label: 'Placement Officer' },
+  'marketing lead':       { bg: '#fef2f2', color: '#b91c1c', label: 'Marketing Lead' },
+  'it admin':             { bg: '#f1f5f9', color: '#334155', label: 'IT Admin' },
+  'librarian':            { bg: '#fffbeb', color: '#b45309', label: 'Librarian' },
+  'transport manager':    { bg: '#eff6ff', color: '#2563eb', label: 'Transport Mgr' },
+  'hostel warden':        { bg: '#faf5ff', color: '#7e22ce', label: 'Hostel Warden' },
 };
 
 
@@ -186,8 +197,8 @@ const Layout = ({ children, title }) => {
   // Filter menu by role permissions
   let menuItems = allMenuItems.filter(item => hasAccess(roleName, item.section));
 
-  // For faculty and hr manager, remove top-level general Dashboard to prevent double dashboard in sidebar
-  if (roleName === 'faculty' || roleName === 'hr manager') {
+  // For faculty and HR roles, remove top-level general Dashboard to prevent double dashboard in sidebar
+  if (roleName === 'faculty' || roleName === 'hr manager' || roleName === 'hr') {
     menuItems = menuItems.filter(item => item.section !== 'dashboard');
   }
 

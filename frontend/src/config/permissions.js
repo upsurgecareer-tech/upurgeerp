@@ -2,12 +2,23 @@
 // Roles match exact DB role names (lowercase comparison)
 
 export const ROLE_PERMISSIONS = {
-  'super admin':   ['*'],           // Full access to everything
-  'branch admin':  ['dashboard', 'crm', 'students', 'lms', 'hrms', 'reports', 'admin'],
-  'faculty':       ['dashboard', 'students', 'lms'],
-  'counsellor':    ['dashboard', 'crm', 'students'],
-  'cashier':       ['dashboard', 'students', 'reports'],
-  'hr manager':    ['hrms', 'reports'],
+  'super admin':          ['*'],           // Full access to everything
+  'branch admin':         ['dashboard', 'crm', 'students', 'lms', 'hrms', 'reports', 'admin'],
+  'faculty':              ['dashboard', 'students', 'lms'],
+  'counsellor':           ['dashboard', 'crm', 'students'],
+  'counselling':          ['dashboard', 'crm', 'students'],
+  'cashier':              ['dashboard', 'students', 'reports'],
+  'hr':                   ['dashboard', 'hrms', 'reports', 'staff'],
+  'hr manager':           ['dashboard', 'hrms', 'reports', 'staff'],
+  'accountant':           ['dashboard', 'students', 'reports', 'accounting', 'fees'],
+  'receptionist':         ['dashboard', 'crm', 'students'],
+  'academic coordinator': ['dashboard', 'students', 'lms'],
+  'placement officer':    ['dashboard', 'students', 'crm'],
+  'marketing lead':       ['dashboard', 'crm', 'reports'],
+  'it admin':             ['dashboard', 'admin', 'reports'],
+  'librarian':            ['dashboard', 'students'],
+  'transport manager':    ['dashboard', 'students'],
+  'hostel warden':        ['dashboard', 'students'],
 };
 
 // Check if a user has access to a menu section

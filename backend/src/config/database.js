@@ -1,12 +1,12 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-const dbName = process.env.DB_NAME || 'defaultdb';
-const dbUser = process.env.DB_USER || 'avnadmin';
+const dbName = (process.env.DB_NAME && process.env.DB_NAME !== 'upsurgeerp' && process.env.DB_NAME !== 'defaultdb') ? process.env.DB_NAME : 'test';
+const dbUser = (process.env.DB_USER && process.env.DB_USER !== 'root' && process.env.DB_USER !== 'avnadmin') ? process.env.DB_USER : 'DKzpL9v4P9d4wCV.root';
 const defaultPass = Buffer.from('QVZOU19zekg1N21VZFZnVEVWc1l1X0Mz', 'base64').toString('utf-8');
 const dbPassword = process.env.DB_PASSWORD || defaultPass;
-const dbHost = (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && !process.env.DB_HOST.includes('127.0.0.1')) ? process.env.DB_HOST : 'mysql-b0c2561-upsurgecareer-ba86.i.aivencloud.com';
-const dbPort = process.env.DB_PORT || 21345;
+const dbHost = (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && !process.env.DB_HOST.includes('127.0.0.1') && !process.env.DB_HOST.includes('aivencloud')) ? process.env.DB_HOST : 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
+const dbPort = (process.env.DB_PORT && process.env.DB_PORT !== '3306' && process.env.DB_PORT !== '21345') ? process.env.DB_PORT : 4000;
 const isSsl = dbHost !== 'localhost' && !dbHost.includes('127.0.0.1') && dbHost !== 'mysql';
 
 const sequelize = new Sequelize(

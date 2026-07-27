@@ -4,7 +4,7 @@ require('dotenv').config();
 const dbName = (process.env.DB_NAME && process.env.DB_NAME !== 'upsurgeerp' && process.env.DB_NAME !== 'defaultdb') ? process.env.DB_NAME : 'test';
 const dbUser = (process.env.DB_USER && process.env.DB_USER !== 'root' && process.env.DB_USER !== 'avnadmin') ? process.env.DB_USER : 'DKzpL9v4P9d4wCV.root';
 const defaultPass = 'lsTIMtsfr3IuebDD';
-const dbPassword = (process.env.DB_PASSWORD && !process.env.DB_PASSWORD.includes('QVZ') && process.env.DB_PASSWORD !== '7BwFmYsnZPHQn1UP') ? process.env.DB_PASSWORD : defaultPass;
+const dbPassword = (process.env.DB_PASSWORD && process.env.DB_PASSWORD.length >= 10 && !process.env.DB_PASSWORD.includes('QVZ') && process.env.DB_PASSWORD !== '7BwFmYsnZPHQn1UP' && process.env.DB_PASSWORD !== 'root') ? process.env.DB_PASSWORD : defaultPass;
 const dbHost = (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' && !process.env.DB_HOST.includes('127.0.0.1') && !process.env.DB_HOST.includes('aivencloud')) ? process.env.DB_HOST : 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
 const dbPort = (process.env.DB_PORT && process.env.DB_PORT !== '3306' && process.env.DB_PORT !== '21345') ? process.env.DB_PORT : 4000;
 const isSsl = dbHost !== 'localhost' && !dbHost.includes('127.0.0.1') && dbHost !== 'mysql';
@@ -78,10 +78,15 @@ const testConnection = async () => {
         await sequelize.query(q).catch(() => {});
       }
 
-      // Auto-seed demo data if database is empty or has very few students
+      // Auto-seed initial data and demo data if database is empty or has very few students
       const studentCount = await models.Student.count().catch(() => 0);
-      if (studentCount < 50) {
-        console.log('🔄 Student count is low (<50). Running comprehensive 100-record demo seeder...');
+      const userCount = await models.User.count().catch(() => 0);
+      if (userCount < 2 || studentCount < 50) {
+        console.log('🔄 Running initial seeder (Organizations, Branches, Roles, Admin User)...');
+        const initialSeeder = require('../migrations/002_seed_initial_data');
+        await initialSeeder.up(sequelize.getQueryInterface(), Sequelize).catch(e => console.error('⚠️ Initial seeding error:', e.message));
+
+        console.log('🔄 Running comprehensive 100-record demo seeder...');
         const seeder = require('../migrations/021_seed_100_demo_records');
         await seeder.up().catch(e => console.error('⚠️ Seeding error:', e.message));
         console.log('✅ Auto-seeding completed on startup!');

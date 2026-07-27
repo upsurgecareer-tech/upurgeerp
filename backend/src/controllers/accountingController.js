@@ -3,13 +3,16 @@ const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const financialReportService = require('../utils/financialReportService');
 
+const getOrgId = (user) => user ? (user.organizationId || user.organization_id || 1) : 1;
+const getBranchId = (user) => user ? (user.branchId || user.branch_id || 1) : 1;
+
 // Account Heads
 exports.createAccountHead = async (req, res) => {
   try {
     const { name, code, type, parentId } = req.body;
     const accountHead = await AccountHead.create({
-      organizationId: req.user.organizationId,
-      branchId: req.user.branchId,
+      organizationId: getOrgId(req.user),
+      branchId: getBranchId(req.user),
       name, code, type, parentId
     });
     res.status(201).json(accountHead);
@@ -21,7 +24,7 @@ exports.createAccountHead = async (req, res) => {
 exports.getAccountHeads = async (req, res) => {
   try {
     const { type } = req.query;
-    const where = { organizationId: req.user.organizationId, isActive: true };
+    const where = { organizationId: getOrgId(req.user), isActive: true };
     if (type) where.type = type;
     
     const accountHeads = await AccountHead.findAll({ where, order: [['code', 'ASC']] });
@@ -38,7 +41,7 @@ exports.createTransaction = async (req, res) => {
     const { transactionDate, type, description, entries } = req.body;
     
     const lastTransaction = await Transaction.findOne({
-      where: { organizationId: req.user.organizationId },
+      where: { organizationId: getOrgId(req.user) },
       order: [['id', 'DESC']]
     });
     const transactionNumber = `TXN${String((lastTransaction?.id || 0) + 1).padStart(6, '0')}`;
@@ -46,8 +49,8 @@ exports.createTransaction = async (req, res) => {
     const totalAmount = entries.reduce((sum, e) => sum + parseFloat(e.debit || 0), 0);
     
     const transaction = await Transaction.create({
-      organizationId: req.user.organizationId,
-      branchId: req.user.branchId,
+      organizationId: getOrgId(req.user),
+      branchId: getBranchId(req.user),
       transactionNumber,
       transactionDate,
       type,
@@ -77,7 +80,7 @@ exports.createTransaction = async (req, res) => {
 exports.getTransactions = async (req, res) => {
   try {
     const { startDate, endDate, type } = req.query;
-    const where = { organizationId: req.user.organizationId };
+    const where = { organizationId: getOrgId(req.user) };
     if (type) where.type = type;
     if (startDate && endDate) {
       where.transactionDate = { [Op.between]: [startDate, endDate] };
@@ -100,14 +103,14 @@ exports.createExpense = async (req, res) => {
     const { accountHeadId, expenseDate, amount, paymentMethod, description } = req.body;
     
     const lastExpense = await Expense.findOne({
-      where: { organizationId: req.user.organizationId },
+      where: { organizationId: getOrgId(req.user) },
       order: [['id', 'DESC']]
     });
     const expenseNumber = `EXP${String((lastExpense?.id || 0) + 1).padStart(6, '0')}`;
     
     const expense = await Expense.create({
-      organizationId: req.user.organizationId,
-      branchId: req.user.branchId,
+      organizationId: getOrgId(req.user),
+      branchId: getBranchId(req.user),
       expenseNumber,
       accountHeadId,
       expenseDate,
@@ -125,7 +128,7 @@ exports.createExpense = async (req, res) => {
 exports.getExpenses = async (req, res) => {
   try {
     const { startDate, endDate, status } = req.query;
-    const where = { organizationId: req.user.organizationId };
+    const where = { organizationId: getOrgId(req.user) };
     if (status) where.status = status;
     if (startDate && endDate) {
       where.expenseDate = { [Op.between]: [startDate, endDate] };
@@ -149,7 +152,7 @@ exports.approveExpense = async (req, res) => {
     
     await Expense.update(
       { status, approvedBy: req.user.id },
-      { where: { id, organizationId: req.user.organizationId } }
+      { where: { id, organizationId: getOrgId(req.user) } }
     );
     res.json({ message: 'Expense updated' });
   } catch (error) {
@@ -162,7 +165,7 @@ exports.getBalanceSheet = async (req, res) => {
   try {
     const { date } = req.query;
     const balanceSheet = await financialReportService.generateBalanceSheet(
-      req.user.organizationId,
+      getOrgId(req.user),
       date ? new Date(date) : new Date()
     );
     res.json(balanceSheet);
@@ -175,7 +178,7 @@ exports.getProfitLoss = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     const profitLoss = await financialReportService.generateProfitLoss(
-      req.user.organizationId,
+      getOrgId(req.user),
       startDate ? new Date(startDate) : null,
       endDate ? new Date(endDate) : null
     );
@@ -189,7 +192,7 @@ exports.getTrialBalance = async (req, res) => {
   try {
     const { date } = req.query;
     const trialBalance = await financialReportService.generateTrialBalance(
-      req.user.organizationId,
+      getOrgId(req.user),
       date ? new Date(date) : new Date()
     );
     res.json(trialBalance);

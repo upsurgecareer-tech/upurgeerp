@@ -17,6 +17,11 @@ const Attendance = sequelize.define('Attendance', {
     allowNull: false,
     references: { model: 'students', key: 'id' }
   },
+  batch_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'batches', key: 'id' }
+  },
   status: {
     type: DataTypes.ENUM('Present', 'Absent', 'Leave'),
     defaultValue: 'Absent'

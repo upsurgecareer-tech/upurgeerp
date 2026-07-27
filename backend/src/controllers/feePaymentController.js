@@ -143,7 +143,7 @@ exports.getFeeCollectionReport = async (req, res) => {
       },
       include: [{
         model: Admission,
-        as: 'Admission',
+        as: 'admission',
         attributes: [],
         include: [{
           model: require('../models/Student'),
@@ -170,9 +170,10 @@ exports.getAllPayments = async (req, res) => {
       include: [
         {
           model: Admission,
+          as: 'admission',
           include: [
-            { model: Student, attributes: ['id', 'name', 'mobile', 'email', 'admission_no'] },
-            { model: CoursePackage, attributes: ['id', 'name'] }
+            { model: Student, as: 'student', attributes: ['id', 'name', 'mobile', 'email', 'admission_no'] },
+            { model: CoursePackage, as: 'coursePackage', attributes: ['id', 'name'] }
           ]
         }
       ],

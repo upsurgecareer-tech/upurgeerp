@@ -315,6 +315,7 @@ const CommunicationLog = CommObj.CommunicationLog;
 
 const Assignment = require('./Assignment');
 const AssignmentSubmission = require('./AssignmentSubmission');
+const Attendance = require('./Attendance');
 const AttendanceSession = require('./AttendanceSession');
 const BatchStudent = require('./BatchStudent');
 const Certificate = require('./Certificate');
@@ -342,17 +343,16 @@ FeeSchedule.belongsTo(Admission, { foreignKey: 'admission_id', as: 'admission' }
 
 // FeePayment Associations
 FeePayment.belongsTo(Admission, { foreignKey: 'admission_id', as: 'admission' });
-FeePayment.belongsTo(Admission, { foreignKey: 'admission_id', as: 'Admission' });
 Admission.hasMany(FeePayment, { foreignKey: 'admission_id', as: 'feePayments' });
-Admission.hasMany(FeePayment, { foreignKey: 'admission_id', as: 'FeePayments' });
 
 FeePayment.belongsTo(FeeSchedule, { foreignKey: 'fee_schedule_id', as: 'feeSchedule' });
 FeeSchedule.hasMany(FeePayment, { foreignKey: 'fee_schedule_id', as: 'feePayments' });
 FeePayment.belongsTo(User, { foreignKey: 'received_by', as: 'receiver' });
 
-// Ensure Admission belongsTo Student with both lowercase and uppercase aliases
+// Ensure Admission belongsTo Student and CoursePackage with both lowercase and uppercase aliases
 Admission.belongsTo(Student, { foreignKey: 'student_id', as: 'Student' });
 Student.hasMany(Admission, { foreignKey: 'student_id', as: 'Admissions' });
+Admission.belongsTo(CoursePackage, { foreignKey: 'course_package_id', as: 'CoursePackage' });
 
 // Exam & Portal Associations
 Exam.hasMany(ExamAttempt, { foreignKey: 'exam_id', as: 'attempts' });
@@ -378,6 +378,19 @@ Employee.hasMany(StaffAttendance, { foreignKey: 'employee_id', as: 'staffAttenda
 StaffAttendance.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
 Student.hasMany(Certificate, { foreignKey: 'student_id', as: 'certificates' });
 Certificate.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
+
+// Attendance Associations
+Student.hasMany(Attendance, { foreignKey: 'student_id', as: 'attendances' });
+Attendance.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
+Attendance.belongsTo(Student, { foreignKey: 'student_id', as: 'Student' });
+
+AttendanceSession.hasMany(Attendance, { foreignKey: 'session_id', as: 'attendances' });
+Attendance.belongsTo(AttendanceSession, { foreignKey: 'session_id', as: 'session' });
+Attendance.belongsTo(AttendanceSession, { foreignKey: 'session_id', as: 'AttendanceSession' });
+
+Batch.hasMany(Attendance, { foreignKey: 'batch_id', as: 'attendances' });
+Attendance.belongsTo(Batch, { foreignKey: 'batch_id', as: 'batch' });
+Attendance.belongsTo(Batch, { foreignKey: 'batch_id', as: 'Batch' });
 
 module.exports = {
   User,
@@ -424,6 +437,7 @@ module.exports = {
   CommunicationLog,
   Assignment,
   AssignmentSubmission,
+  Attendance,
   AttendanceSession,
   BatchStudent,
   Certificate,

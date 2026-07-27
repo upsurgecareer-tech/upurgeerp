@@ -73,7 +73,8 @@ const testConnection = async () => {
         "ALTER TABLE leads ADD COLUMN priority VARCHAR(50) DEFAULT 'Warm';",
         "ALTER TABLE leads ADD COLUMN remarks TEXT NULL;",
         "ALTER TABLE leads MODIFY COLUMN source_id INT NULL;",
-        "ALTER TABLE attendance ADD COLUMN batch_id INT NULL;"
+        "ALTER TABLE attendance ADD COLUMN batch_id INT NULL;",
+        "ALTER TABLE attendance ADD COLUMN date DATE NULL;"
       ];
       for (const q of alterQueries) {
         await sequelize.query(q).catch(() => {});

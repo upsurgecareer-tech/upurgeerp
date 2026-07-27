@@ -209,10 +209,10 @@ exports.getAllAttendance = async (req, res) => {
     const { Attendance, Student, Batch } = require('../models');
     const records = await Attendance.findAll({
       include: [
-        { model: Student, attributes: ['id', 'name', 'admission_no'] },
-        { model: Batch, attributes: ['id', 'name'] }
+        { model: Student, as: 'student', attributes: ['id', 'name', 'admission_no'] },
+        { model: Batch, as: 'batch', attributes: ['id', 'name'] }
       ],
-      order: [['date', 'DESC']],
+      order: [['id', 'DESC']],
       limit: 100
     });
     res.json({ status: 'success', data: records, attendance: records });

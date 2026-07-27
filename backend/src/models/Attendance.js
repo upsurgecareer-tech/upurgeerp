@@ -32,6 +32,10 @@ const Attendance = sequelize.define('Attendance', {
   },
   marked_at: {
     type: DataTypes.DATE
+  },
+  date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
   }
 }, {
   tableName: 'attendance',

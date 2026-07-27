@@ -382,15 +382,12 @@ Certificate.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
 // Attendance Associations
 Student.hasMany(Attendance, { foreignKey: 'student_id', as: 'attendances' });
 Attendance.belongsTo(Student, { foreignKey: 'student_id', as: 'student' });
-Attendance.belongsTo(Student, { foreignKey: 'student_id', as: 'Student' });
 
 AttendanceSession.hasMany(Attendance, { foreignKey: 'session_id', as: 'attendances' });
 Attendance.belongsTo(AttendanceSession, { foreignKey: 'session_id', as: 'session' });
-Attendance.belongsTo(AttendanceSession, { foreignKey: 'session_id', as: 'AttendanceSession' });
 
 Batch.hasMany(Attendance, { foreignKey: 'batch_id', as: 'attendances' });
 Attendance.belongsTo(Batch, { foreignKey: 'batch_id', as: 'batch' });
-Attendance.belongsTo(Batch, { foreignKey: 'batch_id', as: 'Batch' });
 
 module.exports = {
   User,

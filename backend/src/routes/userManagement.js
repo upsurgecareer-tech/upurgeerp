@@ -69,8 +69,19 @@ router.post('/', authenticate, adminOnly, validateUser, async (req, res) => {
     const { username, email, password, first_name, last_name, phone, role_id, branch_id } = req.body;
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ message: `Duplicate entry: Email '${email}' already exists in the system. Please use a unique email address.` });
+    
+    let finalUsername = username;
+    if (!finalUsername || finalUsername.trim() === '' || finalUsername === 'upsurge_user') {
+      const cleanName = `${first_name || ''}${last_name || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      finalUsername = cleanName ? `upsurge_${cleanName}` : `upsurge_${email.split('@')[0]}`;
+      const existingUser = await User.findOne({ where: { username: finalUsername } });
+      if (existingUser) {
+        finalUsername = `${finalUsername}${Math.floor(Math.random() * 1000)}`;
+      }
+    }
+
     const user = await User.create({
-      username, email, password_hash: password,
+      username: finalUsername, email, password_hash: password,
       first_name, last_name, phone,
       role_id, branch_id: branch_id || 1,
       organization_id: 1,

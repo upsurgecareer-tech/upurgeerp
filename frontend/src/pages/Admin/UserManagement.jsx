@@ -86,6 +86,17 @@ export default function UserManagement() {
     setOpen(true);
   };
 
+  const handleNameChange = (field, value) => {
+    const updated = { ...form, [field]: value };
+    if (!editUser) {
+      const first = field === 'first_name' ? value : updated.first_name;
+      const last = field === 'last_name' ? value : updated.last_name;
+      const clean = `${first || ''}${last || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      updated.username = clean ? `upsurge_${clean}` : '';
+    }
+    setForm(updated);
+  };
+
   const handleSave = async () => {
     if (!form.first_name || !form.email || !form.role_id) {
       toast.error('First name, email and role are required'); return;
@@ -307,15 +318,16 @@ export default function UserManagement() {
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid item xs={6}>
                 <TextField fullWidth label="First Name *" value={form.first_name}
-                  onChange={e => setForm({ ...form, first_name: e.target.value })} />
+                  onChange={e => handleNameChange('first_name', e.target.value)} />
               </Grid>
               <Grid item xs={6}>
                 <TextField fullWidth label="Last Name" value={form.last_name}
-                  onChange={e => setForm({ ...form, last_name: e.target.value })} />
+                  onChange={e => handleNameChange('last_name', e.target.value)} />
               </Grid>
               {!editUser && (
                 <Grid item xs={12}>
                   <TextField fullWidth label="Username *" value={form.username}
+                    helperText="Auto-generated from employee name (you can customize if needed)"
                     onChange={e => setForm({ ...form, username: e.target.value })} />
                 </Grid>
               )}

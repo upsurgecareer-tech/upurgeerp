@@ -325,6 +325,11 @@ export default function UserManagement() {
                 <TextField fullWidth label="Last Name" value={form.last_name}
                   onChange={e => setForm({ ...form, last_name: e.target.value })} />
               </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth label="Email *" type="email" value={form.email}
+                  disabled={!!editUser}
+                  onChange={e => handleNameChange('email', e.target.value)} />
+              </Grid>
               {!editUser && (
                 <Grid item xs={12}>
                   <TextField fullWidth label="Username *" value={form.username}
@@ -332,11 +337,6 @@ export default function UserManagement() {
                     onChange={e => setForm({ ...form, username: e.target.value })} />
                 </Grid>
               )}
-              <Grid item xs={12}>
-                <TextField fullWidth label="Email *" type="email" value={form.email}
-                  disabled={!!editUser}
-                  onChange={e => handleNameChange('email', e.target.value)} />
-              </Grid>
               {!editUser && (
                 <Grid item xs={12}>
                   <TextField fullWidth label="Password *" type={showPass ? 'text' : 'password'}

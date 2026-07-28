@@ -66,7 +66,7 @@ const Staff = () => {
       } else {
         const res = await api.post('/staff', formData);
         const creds = res.data.credentials;
-        toast.success(`Staff created! Username: ${creds?.username || 'upsurge'} | Password: ${creds?.password || 'Check email'}`);
+        toast.success(`Staff created! Username: ${creds?.username || formData.email} | Password: ${creds?.password || 'Check email'}`);
       }
       handleClose();
       fetchStaff();

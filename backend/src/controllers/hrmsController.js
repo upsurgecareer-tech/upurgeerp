@@ -19,12 +19,8 @@ exports.createEmployee = async (req, res) => {
         const bcrypt = require('bcryptjs');
         const pwd = password || Math.random().toString(36).slice(-8);
         const password_hash = await bcrypt.hash(pwd, 12);
-        const cleanName = `${first_name || ''}${last_name || ''}`.toLowerCase().replace(/[^a-z0-9]/g, '');
-        let username = cleanName ? `upsurge_${cleanName}` : `upsurge_${email.split('@')[0]}`;
-        const existingUser = await User.findOne({ where: { username } });
-        if (existingUser) {
-          username = `${username}${Math.floor(Math.random() * 1000)}`;
-        }
+        // Use email as the username
+        let username = email;
         user = await User.create({
           branch_id: req.user ? req.user.branch_id || 1 : 1,
           organization_id: req.user ? req.user.organization_id || 1 : 1,

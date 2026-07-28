@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
@@ -14,6 +15,7 @@ const app = express();
 
 // Security Middleware
 app.use(helmet());
+app.use(compression());
 
 // CORS Configuration
 app.use(cors({

@@ -27,7 +27,17 @@ const startServer = () => {
   });
 
   // Initialize DB, Redis, and Cron Jobs asynchronously (non-blocking)
-  testConnection().catch(err => console.error('DB connect error:', err.message));
+  testConnection().then(async () => {
+    // Temporary: Update roles in the live database on startup
+    try {
+      const Role = require('./models/Role');
+      await Role.update({ name: 'trainer' }, { where: { name: 'faculty' } });
+      await Role.update({ name: 'hr executive' }, { where: { name: 'hr manager' } });
+      console.log('Roles updated in database successfully');
+    } catch (e) {
+      console.error('Failed to update roles on startup:', e.message);
+    }
+  }).catch(err => console.error('DB connect error:', err.message));
   initRedis().catch(err => console.error('Redis connect error:', err.message));
   try {
     initializeCronJobs();

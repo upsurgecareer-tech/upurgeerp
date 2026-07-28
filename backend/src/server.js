@@ -31,9 +31,30 @@ const startServer = () => {
     // Temporary: Update roles in the live database on startup
     try {
       const Role = require('./models/Role');
+      const { Op } = require('sequelize');
+      
+      // Update roles
       await Role.update({ name: 'trainer' }, { where: { name: 'faculty' } });
       await Role.update({ name: 'hr executive' }, { where: { name: 'hr manager' } });
-      console.log('Roles updated in database successfully');
+      
+      // Delete unwanted roles
+      const rolesToDelete = [
+        'academic counselor', 'cashier', 'hostel warden', 'it admin',
+        'librarian', 'marketing', 'placement officer', 'reception', 'transport manager',
+        'Academic counselor', 'Cashier', 'Hostel warden', 'It admin', 'IT Admin',
+        'Librarian', 'Marketing', 'Placement officer', 'Reception', 'Transport manager',
+        'receptionist', 'Receptionist' // just in case
+      ];
+      
+      await Role.destroy({
+        where: {
+          name: {
+            [Op.in]: rolesToDelete
+          }
+        }
+      });
+      
+      console.log('Roles updated and deleted in database successfully');
     } catch (e) {
       console.error('Failed to update roles on startup:', e.message);
     }

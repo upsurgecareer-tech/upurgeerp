@@ -74,6 +74,10 @@ const Layout = ({ children, title }) => {
   const roleStyle = roleBadge[roleName] || { bg: '#f1f5f9', color: '#475569', label: roleName || 'User' };
   const adminUser = isAdmin();
 
+  // User Profile Menu State
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openMenu = Boolean(anchorEl);
+
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const handleMenuToggle = (menuKey) => setOpenMenus(prev => ({ ...prev, [menuKey]: !prev[menuKey] }));
   const handleLogout = () => {

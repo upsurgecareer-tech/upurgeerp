@@ -68,13 +68,10 @@ const Login = () => {
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <img src={logo} alt="UpsurgeERP" style={{ height: '80px', objectFit: 'contain' }} />
+            <img src={logo} alt="Upsurge ERP" style={{ height: '80px', objectFit: 'contain' }} />
           </Box>
           <Typography variant="h4" align="center" gutterBottom>
-            UpsurgeERP
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="textSecondary" gutterBottom>
-            Educational Institution Management
+            Upsurge ERP
           </Typography>
 
           {error && (

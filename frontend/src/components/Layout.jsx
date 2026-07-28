@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem,
   ListItemIcon, ListItemText, ListItemButton, useMediaQuery, useTheme,
-  Collapse, Chip, Avatar, Tooltip,
+  Collapse, Chip, Avatar, Tooltip, Menu, MenuItem
 } from '@mui/material';
 import {
   Menu as MenuIcon, Dashboard as DashboardIcon, People as PeopleIcon,
+  Person as PersonIcon,
   School as SchoolIcon, Assignment as AssignmentIcon, Payment as PaymentIcon,
   Logout as LogoutIcon, CheckCircle as CheckCircleIcon, BarChart as BarChartIcon,
   TrendingUp as TrendingUpIcon, EventNote as EventNoteIcon, ListAlt as ListAltIcon,
@@ -361,12 +362,27 @@ const Layout = ({ children, title }) => {
               </IconButton>
             </Tooltip>
           )}
-          <Typography variant="body2" sx={{ mr: 2, display: { xs: 'none', sm: 'block' }, color: 'text.secondary' }}>
-            {user?.first_name} {user?.last_name}
-          </Typography>
-          <IconButton color="inherit" onClick={handleLogout} sx={{ color: 'text.primary' }}>
-            <LogoutIcon />
+          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ color: 'text.primary', ml: 1 }}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: roleStyle.color, fontSize: '0.8rem', fontWeight: 700 }}>
+              {user?.first_name?.[0]}{user?.last_name?.[0]}
+            </Avatar>
           </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={openMenu}
+            onClose={() => setAnchorEl(null)}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem onClick={() => { setAnchorEl(null); navigate('/my-profile'); }}>
+              <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+              My Profile
+            </MenuItem>
+            <MenuItem onClick={() => { setAnchorEl(null); handleLogout(); }}>
+              <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 

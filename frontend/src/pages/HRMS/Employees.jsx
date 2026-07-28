@@ -13,6 +13,7 @@ export default function Employees({ onAdd }) {
   const [departments, setDepartments] = useState([]);
   const [roles, setRoles] = useState([]);
   const [open, setOpen] = useState(false);
+  const [quickMode, setQuickMode] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -343,6 +344,7 @@ export default function Employees({ onAdd }) {
       onAdd();
     } else {
       setEditMode(false);
+      setQuickMode(false);
       setValidationErrors({});
       setForm({
         user_id: '', role_id: '', first_name: '', last_name: '', email: '', mobile: '', employee_code: '', department_id: '', designation: '', joining_date: '',
@@ -352,6 +354,19 @@ export default function Employees({ onAdd }) {
       });
       setOpen(true);
     }
+  };
+
+  const handleQuickInvite = () => {
+    setEditMode(false);
+    setQuickMode(true);
+    setValidationErrors({});
+    setForm({
+      user_id: '', role_id: '', first_name: '', last_name: '', email: '', mobile: '', employee_code: '', department_id: '', designation: '', joining_date: '',
+      employment_type: 'Full-Time', location: '', salary: '', date_of_birth: '', gender: '',
+      blood_group: '', address: '', emergency_contact_name: '', emergency_contact_phone: '',
+      bank_name: '', bank_account_number: '', bank_ifsc: '', pan_number: '', aadhar_number: ''
+    });
+    setOpen(true);
   };
 
   const handleStatusChange = async (id, status) => {
@@ -818,6 +833,7 @@ export default function Employees({ onAdd }) {
             >
               {viewMode === 'table' ? <GridView /> : <ViewList />}
             </IconButton>
+            <Button variant="outlined" startIcon={<PersonAdd />} onClick={handleQuickInvite} sx={{ borderRadius: 2 }}>Quick Invite</Button>
             <Button variant="contained" startIcon={<PersonAdd />} onClick={handleAdd} sx={{ borderRadius: 2, background: 'linear-gradient(45deg, #1976d2, #9c27b0)' }}>Add Employee</Button>
           </Box>
         </Box>
@@ -1023,15 +1039,14 @@ export default function Employees({ onAdd }) {
         </Paper>
       )}
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 12px 40px rgba(0,0,0,0.1)' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth={quickMode ? "sm" : "md"} fullWidth PaperProps={{ sx: { borderRadius: 3, boxShadow: '0 12px 40px rgba(0,0,0,0.1)' } }}>
         <DialogTitle sx={{ background: 'linear-gradient(45deg, #1976d2, #9c27b0)', color: 'white', fontWeight: 600 }}>
-          {editMode ? 'Edit Employee Details' : 'Add New Employee'}
+          {editMode ? 'Edit Employee Details' : (quickMode ? 'Quick Invite Employee' : 'Add New Employee')}
         </DialogTitle>
-        <DialogContent sx={{ p: 4 }}>
+        <DialogContent sx={{ p: quickMode ? 3 : 4 }}>
           <Box sx={{ mt: 2 }}>
-            {/* Basic Information */}
             <Typography variant="h6" gutterBottom sx={{ mt: 2, mb: 3, color: '#1976d2', fontWeight: 700, borderBottom: '2px solid #e0e0e0', pb: 1 }}>
-              Basic Information
+              {quickMode ? 'Employee Login & Role Info' : 'Basic Information'}
             </Typography>
             <Grid container spacing={2}>
               {!editMode && !selectedEmployee && (
@@ -1180,6 +1195,8 @@ export default function Employees({ onAdd }) {
               </Grid>
             </Grid>
 
+            {!quickMode && (
+              <>
             {/* Personal Information */}
             <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2, color: 'primary.main' }}>
               Personal Information
@@ -1326,11 +1343,13 @@ export default function Employees({ onAdd }) {
                 />
               </Grid>
             </Grid>
+            </>
+            )}
 
             {/* Action Buttons */}
             <Box sx={{ display: 'flex', gap: 2, mt: 5 }}>
               <Button fullWidth variant="outlined" onClick={() => setOpen(false)} sx={{ borderRadius: 2 }}>Cancel</Button>
-              <Button fullWidth variant="contained" onClick={handleSubmit} sx={{ borderRadius: 2, background: 'linear-gradient(45deg, #1976d2, #9c27b0)' }}>Submit Changes</Button>
+              <Button fullWidth variant="contained" onClick={handleSubmit} sx={{ borderRadius: 2, background: 'linear-gradient(45deg, #1976d2, #9c27b0)' }}>{quickMode ? 'Invite Employee' : 'Submit Changes'}</Button>
             </Box>
           </Box>
         </DialogContent>

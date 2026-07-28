@@ -274,6 +274,9 @@ function App() {
           {/* Communication Engine Route */}
           <Route path="/communication" element={<PrivateRoute><CommunicationDashboard /></PrivateRoute>} />
           
+          {/* Employee Self Service Profile */}
+          <Route path="/my-profile" element={<PrivateRoute><EmployeeOnboarding /></PrivateRoute>} />
+          
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>

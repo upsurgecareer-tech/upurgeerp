@@ -209,7 +209,18 @@ exports.updateSelfProfile = async (req, res) => {
       if (aadharExists) return res.status(400).json({ message: `Duplicate entry: Aadhar number '${req.body.aadhar_number}' is already registered with another employee.` });
     }
 
-    await employee.update(req.body);
+    // Prevent users from updating sensitive administrative fields
+    const safeBody = { ...req.body };
+    delete safeBody.salary;
+    delete safeBody.designation;
+    delete safeBody.department_id;
+    delete safeBody.employee_code;
+    delete safeBody.status;
+    delete safeBody.joining_date;
+    delete safeBody.employment_type;
+    delete safeBody.user_id;
+
+    await employee.update(safeBody);
     res.json({ message: 'Profile updated successfully', employee });
   } catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError') {

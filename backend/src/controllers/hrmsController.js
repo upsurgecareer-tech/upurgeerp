@@ -45,10 +45,12 @@ exports.createEmployee = async (req, res) => {
       return res.status(400).json({ message: `Duplicate entry: This User (${user.email || user.username}) is already registered as an employee (ID: ${existingEmployee.employee_code}). Please select a different user or enter a new email address.` });
     }
 
-    // Check if department exists
-    const department = await Department.findByPk(department_id);
-    if (!department) return res.status(404).json({ message: 'Department not found' });
-    if (!department.is_active) return res.status(400).json({ message: 'Department is inactive' });
+    // Check if department exists (if provided)
+    if (department_id) {
+      const department = await Department.findByPk(department_id);
+      if (!department) return res.status(404).json({ message: 'Department not found' });
+      if (!department.is_active) return res.status(400).json({ message: 'Department is inactive' });
+    }
 
     // Check if PAN already exists
     if (pan_number) {

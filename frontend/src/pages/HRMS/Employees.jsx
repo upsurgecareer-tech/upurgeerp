@@ -248,18 +248,18 @@ export default function Employees({ onAdd }) {
   };
 
   const fetchDesignations = async () => {
-    try {
-      const res = await api.get('/hrms/designations');
-      const desigs = (res.data.designations || []).map(d => d.title).filter(Boolean);
-      // Add common designations as fallback if DB has none yet
-      if (desigs.length === 0) {
-        setDesignations(['HR Manager','HR Executive','Software Engineer','Sales Manager','Accountant','Team Lead','Manager','Intern','Coordinator','Supervisor']);
-      } else {
-        setDesignations([...new Set(desigs)]);
-      }
-    } catch {
-      setDesignations(['HR Manager','HR Executive','Software Engineer','Sales Manager','Accountant','Team Lead','Manager','Intern']);
-    }
+    // Overriding DB designations as per user request
+    setDesignations([
+      'Digital marketing', 
+      'junior BA', 
+      'senior BA', 
+      'Sr.TE', 
+      'TE', 
+      'Trainer', 
+      'Team lead', 
+      'IT consulting', 
+      'HR executive'
+    ]);
   };
 
   const handleSubmit = async () => {
@@ -1141,18 +1141,7 @@ export default function Employees({ onAdd }) {
                   </Grid>
                 </>
               )}
-              <Grid item xs={12} sm={6}>
-                <TextField 
-                  select 
-                  fullWidth 
-                  label="Department" 
-                  value={form.department_id} error={!!validationErrors.department_id} helperText={validationErrors.department_id} 
-                  onChange={e => setForm({...form, department_id: e.target.value})}
-                >
-                  <MenuItem value="">Select Department</MenuItem>
-                  {departments.map(d => <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>)}
-                </TextField>
-              </Grid>
+
               <Grid item xs={12} sm={6}>
                 <TextField 
                   select 

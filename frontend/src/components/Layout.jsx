@@ -210,7 +210,12 @@ const Layout = ({ children, title }) => {
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(12px)' }}>
       <Toolbar sx={{ bgcolor: 'transparent', color: 'black', minHeight: '64px !important', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-        <img src={logo} alt="Upsurge ERP" style={{ height: '50px', objectFit: 'contain' }} />
+        <img 
+          src={logo} 
+          alt="Upsurge ERP" 
+          style={{ height: '50px', objectFit: 'contain', cursor: 'pointer' }} 
+          onClick={() => navigate('/dashboard')}
+        />
       </Toolbar>
 
       {/* User info + Role badge */}

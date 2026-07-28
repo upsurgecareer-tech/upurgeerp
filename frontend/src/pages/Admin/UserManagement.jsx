@@ -362,7 +362,12 @@ export default function UserManagement() {
                 <TextField select fullWidth label="Role *" value={form.role_id}
                   onChange={e => setForm({ ...form, role_id: e.target.value })}>
                   <MenuItem value="">Select Role</MenuItem>
-                  {roles.map(r => (
+                  {roles
+                    .filter(r => 
+                      ['super admin', 'branch admin', 'it admin'].includes(r.name.toLowerCase()) || 
+                      (editUser && editUser.role_id === r.id)
+                    )
+                    .map(r => (
                     <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
                   ))}
                 </TextField>

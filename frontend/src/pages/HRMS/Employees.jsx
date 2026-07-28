@@ -11,6 +11,7 @@ export default function Employees({ onAdd }) {
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [users, setUsers] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [open, setOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export default function Employees({ onAdd }) {
   const [form, setForm] = useState({
     // Basic Info
     user_id: '',
+    role_id: '',
     employee_code: '',
     department_id: '',
     designation: '',
@@ -161,6 +163,7 @@ export default function Employees({ onAdd }) {
       if (isMounted) {
         await fetchEmployees();
         await fetchUsers();
+        await fetchRoles();
         await fetchDepartments();
         await fetchDesignations();
       }
@@ -221,6 +224,15 @@ export default function Employees({ onAdd }) {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const res = await api.get('/users/roles');
+      setRoles(res.data.roles || []);
+    } catch (error) {
+      console.error('Failed to fetch roles:', error.message);
+    }
+  };
+
   const fetchDepartments = async () => {
     try {
       const res = await api.get('/hrms/departments');
@@ -265,6 +277,7 @@ export default function Employees({ onAdd }) {
       fetchEmployees();
       setForm({
         user_id: '',
+        role_id: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -305,6 +318,7 @@ export default function Employees({ onAdd }) {
     setSelectedEmployee(emp);
     setForm({
       user_id: emp.user_id,
+      role_id: emp.user?.role_id || '',
       department_id: emp.department_id || '',
       designation: emp.designation,
       joining_date: emp.joining_date?.split('T')[0] || '',
@@ -331,7 +345,7 @@ export default function Employees({ onAdd }) {
       setEditMode(false);
       setValidationErrors({});
       setForm({
-        user_id: '', first_name: '', last_name: '', email: '', mobile: '', employee_code: '', department_id: '', designation: '', joining_date: '',
+        user_id: '', role_id: '', first_name: '', last_name: '', email: '', mobile: '', employee_code: '', department_id: '', designation: '', joining_date: '',
         employment_type: 'Full-Time', location: '', salary: '', date_of_birth: '', gender: '',
         blood_group: '', address: '', emergency_contact_name: '', emergency_contact_phone: '',
         bank_name: '', bank_account_number: '', bank_ifsc: '', pan_number: '', aadhar_number: ''
@@ -1066,7 +1080,26 @@ export default function Employees({ onAdd }) {
                       placeholder="10-digit mobile number"
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField 
+                      select 
+                      fullWidth 
+                      label="Role *" 
+                      value={form.role_id || ''} 
+                      error={!!validationErrors.role_id} helperText={validationErrors.role_id}
+                      onChange={e => setForm({...form, role_id: e.target.value})} 
+                      required={!form.user_id}
+                      disabled={!!form.user_id}
+                    >
+                      <MenuItem value="">Select Role</MenuItem>
+                      {roles
+                        .filter(r => !['super admin', 'branch admin', 'it admin'].includes(r.name.toLowerCase()))
+                        .map(r => (
+                          <MenuItem key={r.id} value={r.id}>{r.name}</MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
                     <TextField 
                       select 
                       fullWidth 
